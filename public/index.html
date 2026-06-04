@@ -75,7 +75,6 @@
         .text-bold { font-weight: 600; color: white; }
         .text-dim { color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px; }
         .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 6px; }
-        .badge-room { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; }
 
         .loading-state, .empty-state { text-align: center; padding: 4rem; color: var(--text-secondary); }
         .spinner {
@@ -123,9 +122,10 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="filter-dokter">Filter Dokter DPJP (Default)</label>
+                    <label for="filter-dokter">Filter Dokter DPJP (Khusus Rawat Inap)</label>
                     <select id="filter-dokter" class="glass-input" onchange="fetchData()">
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
+                        <option value="drg. Irmasmita Tasniadara, Sp.KG">drg. Irmasmita Tasniadara, Sp.KG</option>
                         <option value="">-- Tampilkan Semua Dokter --</option>
                         <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
                         <option value="drg. Putri Sinapoy">drg. Putri Sinapoy</option>
@@ -160,6 +160,9 @@
     </div>
 
     <script>
+        // Variabel penampung hash data untuk membandingkan apakah ada perubahan data baru dari Vercel
+        let currentDataHash = "";
+
         function updateClock() {
             const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             const timeString = new Intl.DateTimeFormat('id-ID', options).format(new Date());
@@ -170,16 +173,29 @@
 
         function gantiLayanan() {
             const layanan = document.getElementById('layanan-selector').value;
-            // Jika memilih Endo, lepaskan drg Isnoe (kosongkan)
-            if (layanan.includes('rajalendo')) {
-                document.getElementById('filter-dokter').value = "";
-            } else {
-                document.getElementById('filter-dokter').value = "drg. Isnoe Suryandanu, Sp.BM";
+            const filterDokter = document.getElementById('filter-dokter');
+            
+            if (layanan === 'ranap') {
+                filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
+                filterDokter.disabled = false; // Buka Kunci
+                filterDokter.style.opacity = "1";
+            } else if (layanan.includes('rajalendo')) {
+                filterDokter.value = "drg. Irmasmita Tasniadara, Sp.KG";
+                filterDokter.disabled = true; // Kunci Mutlak
+                filterDokter.style.opacity = "0.6";
+            } else if (layanan.includes('rajalbm')) {
+                filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
+                filterDokter.disabled = true; // Kunci Mutlak
+                filterDokter.style.opacity = "0.6";
             }
+            
+            // Reset hash karena berganti layanan, agar wajib merender ulang UI
+            currentDataHash = ""; 
             fetchData();
         }
 
-        async function fetchData() {
+        // isBackground = true artinya tarikan diam-diam dari sistem (tanpa loading spinner)
+        async function fetchData(isBackground = false) {
             const tbody = document.getElementById('table-body');
             const thead = document.getElementById('table-head');
             const dataCount = document.getElementById('data-count');
@@ -202,12 +218,15 @@
                 thead.innerHTML = `<tr><th>No. RM</th><th>Data Pasien & Kunjungan</th><th>Penjamin & Dokter</th><th>Status</th></tr>`;
             }
 
-            tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Menarik data dari Vercel Cache...</p></div></td></tr>`;
+            // HANYA Munculkan Spinner Loading jika ini adalah klik manual / ganti layanan (Bukan tarikan background)
+            if (!isBackground) {
+                tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Menarik data dari Vercel Cache...</p></div></td></tr>`;
+            }
 
             try {
                 let url = `/api/${endpointName}?`;
                 if(cari) url += `cari=${encodeURIComponent(cari)}&`;
-                if(dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
+                if(val === 'ranap' && dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
                 if(jenisTarget) url += `jenis=${jenisTarget}&`;
                 
                 apiLinkStatus.innerText = `https://ishiprsud.vercel.app/api/${endpointName}`;
@@ -215,6 +234,15 @@
                 const response = await fetch(url);
                 const textData = await response.text(); 
                 
+                // SMART FIX: Jika ini adalah tarikan background, dan isi datanya persis sama seperti sebelumnya,
+                // hentikan fungsi di sini (return) agar layar tidak berkedip!
+                if (isBackground && currentDataHash === textData) {
+                    return; 
+                }
+                
+                // Simpan hash data terbaru
+                currentDataHash = textData;
+
                 let result;
                 try { result = JSON.parse(textData); } 
                 catch (parseErr) { throw new Error("Gagal membaca JSON dari server Vercel."); }
@@ -253,16 +281,30 @@
                 });
 
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Terjadi kesalahan koneksi ke Serverless API.</p><p style="font-size: 0.8rem; margin-top: 5px;">${error.message}</p></div></td></tr>`;
+                // Hanya tampilkan error merah di layar jika tarikan dilakukan secara manual
+                if (!isBackground) {
+                    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Terjadi kesalahan koneksi ke Serverless API.</p><p style="font-size: 0.8rem; margin-top: 5px;">${error.message}</p></div></td></tr>`;
+                }
             }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            fetchData();
-            setInterval(fetchData, 3000);
+            // Force setup di awal
+            document.getElementById('layanan-selector').dispatchEvent(new Event('change'));
+            
+            // SMART UPGRADE: "Silent Fetch" (Tarikan Latar Belakang Cerdas)
+            // Setiap 20 detik, web akan mengecek server. Fungsi ini menjaga Vercel API agar tidak "tertidur",
+            // sekaligus memperbarui UI diam-diam JIKA HANYA JIKA ada data baru dari Chrome Extension.
+            setInterval(() => fetchData(true), 20000);
         });
 
-        document.getElementById('filter-cari').addEventListener('keypress', function(e) { if(e.key === 'Enter') fetchData(); });
+        // Trigger manual saat ngetik di kolom pencarian
+        document.getElementById('filter-cari').addEventListener('keypress', function(e) { 
+            if(e.key === 'Enter') {
+                currentDataHash = ""; // Reset hash
+                fetchData(false); 
+            }
+        });
     </script>
 </body>
 </html>
