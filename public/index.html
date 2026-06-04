@@ -86,14 +86,6 @@
         
         .api-status { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 20px; font-family: monospace;}
         .api-status span { color: #a855f7; font-weight: bold; }
-
-        @media (max-width: 768px) {
-            body { padding: 1rem; }
-            .header { flex-direction: column; align-items: flex-start; }
-            .clock-widget { align-self: flex-start; }
-            .filter-grid { grid-template-columns: 1fr; }
-            .btn-sync { width: 100%; }
-        }
     </style>
 </head>
 <body>
@@ -104,7 +96,7 @@
                 <img src="acalogo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
                 <div class="header-title">
                     <h1>Monitoring Rawat Inap - Rawat Jalan</h1>
-                    <p>Real-time Integrasi Data Ranap & Rajal</p>
+                    <p>Real-time Integrasi Data RSUD & API Endpoint</p>
                 </div>
             </div>
             <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
@@ -116,8 +108,10 @@
                     <label for="layanan-selector">Pilih Layanan Poliklinik</label>
                     <select id="layanan-selector" class="glass-input" onchange="gantiLayanan()">
                         <option value="ranap" selected>Rawat Inap</option>
-                        <option value="rajalendo">Rawat Jalan - Endodonsi</option>
-                        <option value="rajalbm">Rawat Jalan - Bedah Mulut</option>
+                        <option value="rajalendo_antrian">Rawat Jalan - Antrian Px Endodonsi</option>
+                        <option value="rajalendo_riwayat">Rawat Jalan - Riwayat Antrian Endodonsi</option>
+                        <option value="rajalbm_antrian">Rawat Jalan - Antrian Px Bedah Mulut</option>
+                        <option value="rajalbm_riwayat">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
                     </select>
                 </div>
                 <div class="input-group">
@@ -168,9 +162,8 @@
 
         function gantiLayanan() {
             const layanan = document.getElementById('layanan-selector').value;
-            // Kunci default "drg. Isnoe" hanya untuk Ranap dan Rajal BM. 
-            // Jika memilih Endo, lepaskan drg Isnoe (karena Isnoe tidak di Endo).
-            if (layanan === 'rajalendo') {
+            // Jika memilih Endo, lepaskan drg Isnoe (kosongkan)
+            if (layanan.includes('rajalendo')) {
                 document.getElementById('filter-dokter').value = "";
             } else {
                 document.getElementById('filter-dokter').value = "drg. Isnoe Suryandanu, Sp.BM";
@@ -186,21 +179,28 @@
             
             const cari = document.getElementById('filter-cari').value;
             const dokter = document.getElementById('filter-dokter').value;
-            const layanan = document.getElementById('layanan-selector').value;
+            const val = document.getElementById('layanan-selector').value;
             
-            if (layanan === 'ranap') {
+            let endpointName = '';
+            let jenisTarget = '';
+            
+            if (val === 'ranap') {
+                endpointName = 'jadwalranap';
                 thead.innerHTML = `<tr><th>Ruang & Kamar</th><th>Data Pasien</th><th>Dokter Penanggung Jawab</th><th>Status Registrasi</th></tr>`;
             } else {
+                const parts = val.split('_');
+                endpointName = 'jadwal' + parts[0]; 
+                jenisTarget = parts[1]; 
                 thead.innerHTML = `<tr><th>No. RM</th><th>Data Pasien & Kunjungan</th><th>Penjamin & Dokter</th><th>Status</th></tr>`;
             }
 
             tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Menarik data dari Vercel Cache...</p></div></td></tr>`;
 
             try {
-                let endpointName = 'jadwal' + layanan;
                 let url = `/api/${endpointName}?`;
                 if(cari) url += `cari=${encodeURIComponent(cari)}&`;
                 if(dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
+                if(jenisTarget) url += `jenis=${jenisTarget}&`;
                 
                 apiLinkStatus.innerText = `https://ishiprsud.vercel.app/api/${endpointName}`;
 
@@ -224,7 +224,7 @@
                 result.data.forEach(item => {
                     const tr = document.createElement('tr');
                     
-                    if (layanan === 'ranap') {
+                    if (val === 'ranap') {
                         tr.innerHTML = `
                             <td><div class="text-bold">${item.ruangan}</div><div class="text-dim">${item.no_kamar}</div></td>
                             <td><div class="text-bold">${item.nama_pasien}</div><div class="text-dim">RM: ${item.no_rm} | ${item.usia}</div></td>
@@ -232,8 +232,7 @@
                             <td><div class="text-bold">${item.tanggal_masuk}</div><div class="text-dim">Lama: ${item.lama_rawat}</div></td>
                         `;
                     } else {
-                        // Memunculkan Label Jenis agar jelas (Riwayat atau Antrian)
-                        const labelJenis = item.jenis === 'riwayat' ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian</span>';
+                        const labelJenis = item.jenis === 'riwayat' ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
 
                         tr.innerHTML = `
                             <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
