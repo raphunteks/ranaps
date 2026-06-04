@@ -1,13 +1,13 @@
 {
-  "name": "ranap-scraper-glassmorphism",
+  "name": "ranap-scraper",
   "version": "1.0.0",
-  "description": "API Scraper Jadwal Ranap dengan Header Spoofing dan UI Glassmorphism murni",
+  "description": "API Scraper dengan UI Glassmorphism",
   "main": "api/jadwal.js",
   "scripts": {
     "start": "vercel dev"
   },
   "dependencies": {
-    "axios": "^1.6.8",
+    "axios": "^1.7.2",
     "cheerio": "^1.0.0-rc.12"
   }
 }
