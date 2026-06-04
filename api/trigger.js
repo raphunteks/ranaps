@@ -1,5 +1,5 @@
-// File ini berfungsi sebagai "Lonceng" antara Bot WA dan Ekstensi Chrome
 let needsRefresh = false;
+let pendingNotification = "";
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -8,14 +8,15 @@ module.exports = async (req, res) => {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    // Bot WA mengirim POST untuk menyalakan lonceng
     if (req.method === 'POST') {
-        needsRefresh = req.body.refresh;
-        return res.status(200).json({ status: true, needsRefresh });
+        if (req.body.refresh !== undefined) needsRefresh = req.body.refresh;
+        if (req.body.notify !== undefined) pendingNotification = req.body.notify;
+        return res.status(200).json({ status: true, needsRefresh, notify: pendingNotification });
     }
 
-    // Ekstensi Chrome melakukan GET untuk mengecek lonceng
     if (req.method === 'GET') {
-        return res.status(200).json({ needsRefresh });
+        let currentNotif = pendingNotification;
+        pendingNotification = ""; // Kosongkan setelah dibaca oleh Bot WA
+        return res.status(200).json({ needsRefresh, notify: currentNotif });
     }
 };
