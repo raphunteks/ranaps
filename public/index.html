@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Rawat Inap - ISHIP RSUD</title>
+    <title>Monitoring Rawat Inap - Rawat Jalan</title>
     
     <link rel="icon" type="image/png" href="acalogo.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -104,8 +104,8 @@
             <div class="header-brand">
                 <img src="acalogo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
                 <div class="header-title">
-                    <h1>Antrian Pasien Rawat Inap</h1>
-                    <p>Real-time Integrasi Data RSUD & API Endpoint</p>
+                    <h1>Sistem Antrian & Riwayat RSUD</h1>
+                    <p>Real-time Integrasi Data Ranap & Rajal</p>
                 </div>
             </div>
             <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
@@ -113,23 +113,19 @@
 
         <!-- Filter Panel -->
         <div class="glass-panel">
-            <div class="filter-grid">
+            <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto;">
+                <div class="input-group">
+                    <label for="layanan-selector">Pilih Layanan Poliklinik</label>
+                    <select id="layanan-selector" class="glass-input" onchange="fetchData()">
+                        <option value="ranap" selected>Rawat Inap</option>
+                        <option value="rajalendo">Rawat Jalan - Endodonsi</option>
+                        <option value="rajalbm">Rawat Jalan - Bedah Mulut</option>
+                    </select>
+                </div>
                 <div class="input-group">
                     <label for="filter-cari">Pencarian Pasien / No. RM</label>
                     <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama atau nomor RM...">
                 </div>
-                <div class="input-group">
-                    <label for="filter-dokter">Filter Dokter DPJP (Default)</label>
-                    <select id="filter-dokter" class="glass-input">
-                        <!-- Option Default -->
-                        <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
-                        <option value="">-- Tampilkan Semua Dokter --</option>
-                        <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
-                        <option value="drg. Putri Sinapoy">drg. Putri Sinapoy</option>
-                        <option value="dr. Suryani, Sp.M., M.Kes">dr. Suryani, Sp.M., M.Kes</option>
-                    </select>
-                </div>
-                <!-- Tombol Sync -->
                 <div class="input-group">
                     <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
                 </div>
@@ -139,18 +135,13 @@
         <!-- Tabel Data -->
         <div class="glass-panel table-container">
             <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Rekam Medis (Semua Tanggal Masuk)</h3>
+                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Medis</h3>
                 <span style="font-size: 0.8rem; background: rgba(167, 139, 250, 0.2); padding: 4px 12px; border-radius: 20px; color: #a78bfa;" id="data-count">Total: 0 Pasien</span>
             </div>
             
             <table>
-                <thead>
-                    <tr>
-                        <th>Ruang & Kamar</th>
-                        <th>Data Pasien</th>
-                        <th>Dokter Penanggung Jawab</th>
-                        <th>Status Registrasi</th>
-                    </tr>
+                <thead id="table-head">
+                    <!-- Diisi dinamis via JS -->
                 </thead>
                 <tbody id="table-body">
                 </tbody>
@@ -158,7 +149,7 @@
         </div>
         
         <div class="api-status">
-            🟢 GET API System Linked to: <span>https://ishiprsud.vercel.app/api/jadwal</span>
+            🟢 GET API System Linked to: <span id="api-link-status">https://ishiprsud.vercel.app/api/jadwalranap</span>
         </div>
     </div>
 
@@ -173,35 +164,38 @@
 
         async function fetchData() {
             const tbody = document.getElementById('table-body');
+            const thead = document.getElementById('table-head');
             const dataCount = document.getElementById('data-count');
+            const apiLinkStatus = document.getElementById('api-link-status');
             
             const cari = document.getElementById('filter-cari').value;
-            const dokter = document.getElementById('filter-dokter').value;
+            const layanan = document.getElementById('layanan-selector').value;
             
-            // PERBAIKAN: Tidak ada lagi penambahan filter tanggal secara otomatis di background
-            // Sehingga Web Vercel akan menarik SEMUA data dari cache (Sama persis seperti Chrome Ext)
+            if (layanan === 'ranap') {
+                thead.innerHTML = `<tr><th>Ruang & Kamar</th><th>Data Pasien</th><th>Dokter Penanggung Jawab</th><th>Status Registrasi</th></tr>`;
+            } else {
+                thead.innerHTML = `<tr><th>No. RM</th><th>Data Pasien & Kunjungan</th><th>Penjamin & Dokter</th><th>Status</th></tr>`;
+            }
 
             tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Menarik data dari Vercel Cache...</p></div></td></tr>`;
 
             try {
-                // HANYA menyertakan filter nama & dokter ke URL
-                let url = `/api/jadwal?`;
+                let endpointName = 'jadwal' + layanan;
+                let url = `/api/${endpointName}?`;
                 if(cari) url += `cari=${encodeURIComponent(cari)}&`;
-                if(dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
+                
+                apiLinkStatus.innerText = `https://ishiprsud.vercel.app/api/${endpointName}`;
 
                 const response = await fetch(url);
                 const textData = await response.text(); 
                 
                 let result;
-                try {
-                    result = JSON.parse(textData);
-                } catch (parseErr) {
-                    throw new Error("Gagal membaca JSON dari server Vercel.");
-                }
+                try { result = JSON.parse(textData); } 
+                catch (parseErr) { throw new Error("Gagal membaca JSON dari server Vercel."); }
 
                 if (!result.status || result.data.length === 0) {
                     dataCount.innerText = "Total: 0 Pasien";
-                    let msg = result.message || "Tidak ada data jadwal untuk kriteria pencarian ini.";
+                    let msg = result.message || "Tidak ada data jadwal untuk layanan & kriteria ini.";
                     tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">${msg}</p></div></td></tr>`;
                     return;
                 }
@@ -211,28 +205,23 @@
 
                 result.data.forEach(item => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>
-                            <div class="text-bold">${item.ruangan}</div>
-                            <div class="text-dim">${item.no_kamar}</div>
-                            <span class="badge badge-room">Rawat Inap</span>
-                        </td>
-                        <td>
-                            <div class="text-bold">${item.nama_pasien}</div>
-                            <div class="text-dim">No. RM: ${item.no_rm}</div>
-                            <div class="text-dim">TTL: ${item.tanggal_lahir} (Usia: ${item.usia})</div>
-                        </td>
-                        <td>
-                            <div class="text-bold">DPJP Utama:</div>
-                            <div class="text-dim" style="color: #e2e8f0; margin-bottom: 8px;">${item.dpjp_utama}</div>
-                            <div class="text-bold" style="font-size: 0.75rem;">Rawat Bersama:</div>
-                            <div class="text-dim">${item.dokter_rawat_bersama}</div>
-                        </td>
-                        <td>
-                            <div class="text-bold">${item.tanggal_masuk}</div>
-                            <div class="text-dim" style="margin-bottom: 8px;">Lama Rawat: ${item.lama_rawat}</div>
-                        </td>
-                    `;
+                    
+                    if (layanan === 'ranap') {
+                        tr.innerHTML = `
+                            <td><div class="text-bold">${item.ruangan}</div><div class="text-dim">${item.no_kamar}</div></td>
+                            <td><div class="text-bold">${item.nama_pasien}</div><div class="text-dim">RM: ${item.no_rm} | ${item.usia}</div></td>
+                            <td><div class="text-bold">${item.dpjp_utama}</div><div class="text-dim">Bersama: ${item.dokter_rawat_bersama}</div></td>
+                            <td><div class="text-bold">${item.tanggal_masuk}</div><div class="text-dim">Lama: ${item.lama_rawat}</div></td>
+                        `;
+                    } else {
+                        tr.innerHTML = `
+                            <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
+                            <td><div class="text-bold">${item.nama_pasien}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
+                            <td><div class="text-bold" style="color: #e2e8f0;">${item.dokter}</div><div class="text-dim">${item.penjamin}</div></td>
+                            <td><div class="text-bold">${item.status}</div></td>
+                        `;
+                    }
+                    
                     tbody.appendChild(tr);
                 });
 
@@ -241,12 +230,8 @@
             }
         }
 
-        // Jalankan Fetch otomatis saat web dibuka
         window.addEventListener('DOMContentLoaded', () => {
             fetchData();
-            
-            // Set Auto-Refresh Data di Web setiap 3 detik 
-            // (Agar Web Vercel ikut ter-update tiap kali Extension mengirim data POST baru ke API)
             setInterval(fetchData, 3000);
         });
 
