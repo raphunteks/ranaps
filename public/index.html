@@ -99,7 +99,6 @@
 <body>
 
     <div class="container">
-        <!-- Header -->
         <header class="glass-panel header">
             <div class="header-brand">
                 <img src="acalogo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
@@ -111,7 +110,6 @@
             <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
         </header>
 
-        <!-- Filter Panel -->
         <div class="glass-panel">
             <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto;">
                 <div class="input-group">
@@ -125,7 +123,6 @@
                 <div class="input-group">
                     <label for="filter-dokter">Filter Dokter DPJP (Default)</label>
                     <select id="filter-dokter" class="glass-input" onchange="fetchData()">
-                        <!-- Option Default -->
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="">-- Tampilkan Semua Dokter --</option>
                         <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
@@ -137,14 +134,12 @@
                     <label for="filter-cari">Pencarian Pasien / No. RM</label>
                     <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama atau nomor RM...">
                 </div>
-                <!-- Tombol Sync -->
                 <div class="input-group" style="grid-column: span 3; justify-self: end;">
                     <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
                 </div>
             </div>
         </div>
 
-        <!-- Tabel Data -->
         <div class="glass-panel table-container">
             <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Medis</h3>
@@ -152,11 +147,8 @@
             </div>
             
             <table>
-                <thead id="table-head">
-                    <!-- Diisi dinamis via JS -->
-                </thead>
-                <tbody id="table-body">
-                </tbody>
+                <thead id="table-head"></thead>
+                <tbody id="table-body"></tbody>
             </table>
         </div>
         
@@ -175,8 +167,14 @@
         updateClock();
 
         function gantiLayanan() {
-            // Mengatur ulang filter dokter agar drg. Isnoe selalu menjadi default saat layanan diganti
-            document.getElementById('filter-dokter').value = "drg. Isnoe Suryandanu, Sp.BM";
+            const layanan = document.getElementById('layanan-selector').value;
+            // Kunci default "drg. Isnoe" hanya untuk Ranap dan Rajal BM. 
+            // Jika memilih Endo, lepaskan drg Isnoe (karena Isnoe tidak di Endo).
+            if (layanan === 'rajalendo') {
+                document.getElementById('filter-dokter').value = "";
+            } else {
+                document.getElementById('filter-dokter').value = "drg. Isnoe Suryandanu, Sp.BM";
+            }
             fetchData();
         }
 
@@ -234,14 +232,16 @@
                             <td><div class="text-bold">${item.tanggal_masuk}</div><div class="text-dim">Lama: ${item.lama_rawat}</div></td>
                         `;
                     } else {
+                        // Memunculkan Label Jenis agar jelas (Riwayat atau Antrian)
+                        const labelJenis = item.jenis === 'riwayat' ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian</span>';
+
                         tr.innerHTML = `
                             <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
-                            <td><div class="text-bold">${item.nama_pasien}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
+                            <td><div class="text-bold">${item.nama_pasien} ${labelJenis}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
                             <td><div class="text-bold" style="color: #e2e8f0;">${item.dokter}</div><div class="text-dim">${item.penjamin}</div></td>
                             <td><div class="text-bold">${item.status}</div></td>
                         `;
                     }
-                    
                     tbody.appendChild(tr);
                 });
 
