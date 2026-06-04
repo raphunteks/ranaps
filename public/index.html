@@ -84,7 +84,8 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         
-        .api-status { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 20px; font-family: monospace;}
+        .api-status { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 20px; font-family: monospace;}
+        .api-status span { color: #a855f7; font-weight: bold; }
 
         @media (max-width: 768px) {
             body { padding: 1rem; }
@@ -120,7 +121,7 @@
                 <div class="input-group">
                     <label for="filter-dokter">Filter Dokter DPJP (Default)</label>
                     <select id="filter-dokter" class="glass-input">
-                        <!-- Option Default sudah ter-set -->
+                        <!-- Option Default Otomatis -->
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="">-- Tampilkan Semua Dokter --</option>
                         <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
@@ -128,7 +129,7 @@
                         <option value="dr. Suryani, Sp.M., M.Kes">dr. Suryani, Sp.M., M.Kes</option>
                     </select>
                 </div>
-                <!-- Tanggal Masuk disembunyikan tapi otomatis di-inject di Javascript -->
+                <!-- UI Input Tanggal disembunyikan sesuai permintaan agar bersih -->
                 <div class="input-group">
                     <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
                 </div>
@@ -157,14 +158,14 @@
         </div>
         
         <div class="api-status">
-            🟢 Connected via Endpoint API: <b>https://ishiprsud.vercel.app/api/jadwal</b>
+            🟢 GET API System Linked to: <span>https://ishiprsud.vercel.app/api/jadwal</span>
         </div>
     </div>
 
     <script>
-        // Mendapatkan Tanggal Hari ini Secara Otomatis (Format WITA)
+        // Set Waktu Hari Ini Otomatis di Background
         const getTodayWITA = () => {
-            return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Makassar' }); // YYYY-MM-DD
+            return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Makassar' }); // Format: YYYY-MM-DD
         };
         
         document.getElementById('tanggal-today').innerText = getTodayWITA();
@@ -183,30 +184,31 @@
             
             const cari = document.getElementById('filter-cari').value;
             const dokter = document.getElementById('filter-dokter').value;
-            const tanggal = getTodayWITA(); // Otomatis Filter Hari Ini!
+            const tanggal = getTodayWITA(); // Tanggal otomatis terkirim tanpa perlu input
 
-            tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Membaca data dan melakukan scraping...</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Melakukan injeksi dan scraping data RSUD...</p></div></td></tr>`;
 
             try {
-                // Menggunakan Absolute URL agar tidak ada miss-route Vercel (Penyebab error "The page c...")
-                let url = `https://ishiprsud.vercel.app/api/jadwal?tanggal=${encodeURIComponent(tanggal)}&`;
+                // Path relatif mencegah error routing jika di-deploy di Vercel yang sama
+                let url = `/api/jadwal?tanggal=${encodeURIComponent(tanggal)}&`;
                 if(cari) url += `cari=${encodeURIComponent(cari)}&`;
                 if(dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
 
                 const response = await fetch(url);
                 const textData = await response.text(); 
                 
-                // Mencegah error "Unexpected token T" akibat HTML 404 Vercel
                 let result;
                 try {
                     result = JSON.parse(textData);
                 } catch (parseErr) {
-                    throw new Error("Endpoint API mengembalikan halaman error (Bukan JSON). Cek struktur folder Vercel Anda.");
+                    throw new Error("Gagal membaca JSON. Nama file backend Anda di Vercel mungkin salah. Pastikan file bernama tepat 'jadwal.js' di dalam folder 'api'.");
                 }
 
                 if (!result.status || result.data.length === 0) {
                     dataCount.innerText = "Total: 0 Pasien";
-                    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p>Tidak ada data jadwal untuk kriteria pencarian ini.</p></div></td></tr>`;
+                    // Menampilkan pesan canggih jika data kosong akibat CSR API
+                    let msg = result.message || "Tidak ada data jadwal untuk kriteria pencarian ini.";
+                    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">${msg}</p></div></td></tr>`;
                     return;
                 }
 
@@ -241,10 +243,11 @@
                 });
 
             } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Terjadi kesalahan saat menghubungi API Serverless.</p><p style="font-size: 0.8rem; margin-top: 5px;">${error.message}</p></div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Terjadi kesalahan koneksi ke Serverless API.</p><p style="font-size: 0.8rem; margin-top: 5px;">${error.message}</p></div></td></tr>`;
             }
         }
 
+        // Jalankan Fetch otomatis saat web dibuka
         window.addEventListener('DOMContentLoaded', () => {
             fetchData();
         });
