@@ -5,16 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Rawat Inap - Glassmorphism</title>
     
-    <!-- Favicon Kustom Menggunakan acalogo.png -->
     <link rel="icon" type="image/png" href="acalogo.png">
-    
-    <!-- Google Fonts untuk tipografi elegan -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* =========================================
-           PURE VANILLA CSS - GLASSMORPHISM THEME
-           ========================================= */
         :root {
             --glass-bg: rgba(255, 255, 255, 0.07);
             --glass-border: rgba(255, 255, 255, 0.15);
@@ -25,15 +19,9 @@
             --accent-hover: #4f46e5;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
         body {
-            /* Background gradient estetik Navy Blue / Deep Purple */
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
             color: var(--text-primary);
             min-height: 100vh;
@@ -41,212 +29,69 @@
             background-attachment: fixed;
         }
 
-        /* Ambient glowing orbs background untuk memperkuat efek kaca */
         body::before, body::after {
-            content: '';
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            z-index: -1;
+            content: ''; position: fixed; border-radius: 50%; filter: blur(100px); z-index: -1;
         }
-        body::before {
-            background: rgba(99, 102, 241, 0.3);
-            width: 400px; height: 400px;
-            top: -100px; left: -100px;
-        }
-        body::after {
-            background: rgba(168, 85, 247, 0.2);
-            width: 500px; height: 500px;
-            bottom: -150px; right: -150px;
-        }
+        body::before { background: rgba(99, 102, 241, 0.3); width: 400px; height: 400px; top: -100px; left: -100px; }
+        body::after { background: rgba(168, 85, 247, 0.2); width: 500px; height: 500px; bottom: -150px; right: -150px; }
 
-        .container {
-            max-width: 1280px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1280px; margin: 0 auto; }
 
-        /* Utilities Glassmorphism */
         .glass-panel {
-            background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            box-shadow: var(--glass-shadow);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: var(--glass-shadow);
+            padding: 1.5rem; margin-bottom: 1.5rem;
         }
 
-        /* HEADER */
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 1.2rem;
-        }
-        .header-logo {
-            width: 55px; /* Sesuaikan ukuran logo di sini */
-            height: auto;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            background: rgba(255,255,255,0.1); /* Background opsional jika logo transparan */
-            padding: 4px;
-        }
-        .header-title h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .header-title p {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            margin-top: 4px;
-        }
-        .clock-widget {
-            background: rgba(0,0,0,0.2);
-            padding: 8px 16px;
-            border-radius: 30px;
-            border: 1px solid var(--glass-border);
-            font-family: monospace;
-            font-size: 1.1rem;
-            letter-spacing: 1px;
-            color: #a78bfa;
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+        .header-brand { display: flex; align-items: center; gap: 1.2rem; }
+        .header-logo { width: 55px; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: rgba(255,255,255,0.1); padding: 4px; }
+        .header-title h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; }
+        .header-title p { color: var(--text-secondary); font-size: 0.85rem; margin-top: 4px; }
+        .clock-widget { background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 30px; border: 1px solid var(--glass-border); font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; color: #a78bfa; }
 
-        /* FILTER PANEL */
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.2rem;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .input-group label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-            font-weight: 500;
-        }
+        .filter-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 1.2rem; align-items: end;}
+        .input-group { display: flex; flex-direction: column; }
+        .input-group label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
         .glass-input {
-            background: rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            outline: none;
+            background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(255, 255, 255, 0.1); color: white;
+            padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s ease; outline: none;
         }
-        .glass-input:focus {
-            border-color: var(--accent-color);
-            background: rgba(0, 0, 0, 0.25);
-            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
-        }
-        /* Style specifically for date picker calendar icon color */
-        ::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            opacity: 0.5;
-            cursor: pointer;
-        }
+        .glass-input option { background: #1e1b4b; color: white; }
+        .glass-input:focus { border-color: var(--accent-color); background: rgba(0, 0, 0, 0.25); box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
 
         .btn-sync {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            height: 45px;
-            margin-top: auto;
+            background: var(--accent-color); color: white; border: none; padding: 12px 24px; border-radius: 10px;
+            cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; height: 46px;
         }
-        .btn-sync:hover {
-            background: var(--accent-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
-        }
+        .btn-sync:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); }
 
-        /* TABLE STYLES */
-        .table-container {
-            overflow-x: auto;
-            border-radius: 12px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-        th, td {
-            padding: 1rem;
-            font-size: 0.85rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        th {
-            background: rgba(0, 0, 0, 0.2);
-            color: #a78bfa;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 0.75rem;
-            white-space: nowrap;
-        }
-        tbody tr {
-            transition: background 0.2s ease;
-        }
-        tbody tr:hover {
-            background: rgba(255, 255, 255, 0.04);
-        }
+        .table-container { overflow-x: auto; border-radius: 12px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th, td { padding: 1rem; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        th { background: rgba(0, 0, 0, 0.2); color: #a78bfa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; white-space: nowrap; }
+        tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
 
-        /* Custom Badges & Typography within table */
         .text-bold { font-weight: 600; color: white; }
         .text-dim { color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px; }
-        .badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-top: 6px;
-        }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 6px; }
         .badge-room { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; }
-        .badge-doctor { background: rgba(167, 139, 250, 0.15); border: 1px solid rgba(167, 139, 250, 0.3); color: #a78bfa; }
 
-        .loading-state, .empty-state {
-            text-align: center;
-            padding: 4rem;
-            color: var(--text-secondary);
-        }
+        .loading-state, .empty-state { text-align: center; padding: 4rem; color: var(--text-secondary); }
         .spinner {
-            display: inline-block;
-            width: 40px; height: 40px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-left-color: var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+        
+        .api-status { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.3); margin-top: 20px; font-family: monospace;}
 
         @media (max-width: 768px) {
             body { padding: 1rem; }
             .header { flex-direction: column; align-items: flex-start; }
             .clock-widget { align-self: flex-start; }
+            .filter-grid { grid-template-columns: 1fr; }
+            .btn-sync { width: 100%; }
         }
     </style>
 </head>
@@ -256,17 +101,13 @@
         <!-- Header -->
         <header class="glass-panel header">
             <div class="header-brand">
-                <!-- Menambahkan Logo Anda di sini -->
-                <img src="acalogo.png" alt="Logo Aplikasi" class="header-logo" onerror="this.style.display='none'">
-                
+                <img src="acalogo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
                 <div class="header-title">
                     <h1>Antrian Pasien Rawat Inap</h1>
                     <p>Real-time Integrasi Data RSUD & API Endpoint</p>
                 </div>
             </div>
-            <div class="clock-widget" id="live-clock">
-                Memuat Waktu...
-            </div>
+            <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
         </header>
 
         <!-- Filter Panel -->
@@ -277,15 +118,18 @@
                     <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama atau nomor RM...">
                 </div>
                 <div class="input-group">
-                    <label for="filter-dokter">Filter Dokter DPJP</label>
-                    <input type="text" id="filter-dokter" class="glass-input" placeholder="Contoh: drg. Isnoe">
+                    <label for="filter-dokter">Filter Dokter DPJP (Default)</label>
+                    <select id="filter-dokter" class="glass-input">
+                        <!-- Option Default sudah ter-set -->
+                        <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
+                        <option value="">-- Tampilkan Semua Dokter --</option>
+                        <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
+                        <option value="drg. Putri Sinapoy">drg. Putri Sinapoy</option>
+                        <option value="dr. Suryani, Sp.M., M.Kes">dr. Suryani, Sp.M., M.Kes</option>
+                    </select>
                 </div>
+                <!-- Tanggal Masuk disembunyikan tapi otomatis di-inject di Javascript -->
                 <div class="input-group">
-                    <label for="filter-tanggal">Filter Tanggal Masuk</label>
-                    <input type="date" id="filter-tanggal" class="glass-input">
-                </div>
-                <div class="input-group">
-                    <label style="opacity: 0;">Aksi</label>
                     <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
                 </div>
             </div>
@@ -294,7 +138,7 @@
         <!-- Tabel Data -->
         <div class="glass-panel table-container">
             <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Rekam Medis</h3>
+                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Rekam Medis (<span id="tanggal-today"></span>)</h3>
                 <span style="font-size: 0.8rem; background: rgba(167, 139, 250, 0.2); padding: 4px 12px; border-radius: 20px; color: #a78bfa;" id="data-count">Total: 0 Pasien</span>
             </div>
             
@@ -308,15 +152,23 @@
                     </tr>
                 </thead>
                 <tbody id="table-body">
-                    <!-- Data will be injected here via Vanilla JS -->
                 </tbody>
             </table>
         </div>
+        
+        <div class="api-status">
+            🟢 Connected via Endpoint API: <b>https://ishiprsud.vercel.app/api/jadwal</b>
+        </div>
     </div>
 
-    <!-- VANILLA JAVASCRIPT NATIVE LOGIC -->
     <script>
-        // 1. Clock Engine (WITA / Asia/Makassar)
+        // Mendapatkan Tanggal Hari ini Secara Otomatis (Format WITA)
+        const getTodayWITA = () => {
+            return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Makassar' }); // YYYY-MM-DD
+        };
+        
+        document.getElementById('tanggal-today').innerText = getTodayWITA();
+
         function updateClock() {
             const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             const timeString = new Intl.DateTimeFormat('id-ID', options).format(new Date());
@@ -325,57 +177,44 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // 2. Data Fetching API Logic
         async function fetchData() {
             const tbody = document.getElementById('table-body');
             const dataCount = document.getElementById('data-count');
             
-            // Get values from inputs
             const cari = document.getElementById('filter-cari').value;
             const dokter = document.getElementById('filter-dokter').value;
-            const tanggal = document.getElementById('filter-tanggal').value;
+            const tanggal = getTodayWITA(); // Otomatis Filter Hari Ini!
 
-            // Loading state HTML
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4">
-                        <div class="loading-state">
-                            <div class="spinner"></div>
-                            <p>Membaca data dan melakukan scraping...</p>
-                        </div>
-                    </td>
-                </tr>`;
+            tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Membaca data dan melakukan scraping...</p></div></td></tr>`;
 
             try {
-                // Construct URL with Query Params
-                let url = `/api/jadwal?`;
+                // Menggunakan Absolute URL agar tidak ada miss-route Vercel (Penyebab error "The page c...")
+                let url = `https://ishiprsud.vercel.app/api/jadwal?tanggal=${encodeURIComponent(tanggal)}&`;
                 if(cari) url += `cari=${encodeURIComponent(cari)}&`;
                 if(dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
-                if(tanggal) url += `tanggal=${encodeURIComponent(tanggal)}&`;
 
                 const response = await fetch(url);
-                const result = await response.json();
+                const textData = await response.text(); 
+                
+                // Mencegah error "Unexpected token T" akibat HTML 404 Vercel
+                let result;
+                try {
+                    result = JSON.parse(textData);
+                } catch (parseErr) {
+                    throw new Error("Endpoint API mengembalikan halaman error (Bukan JSON). Cek struktur folder Vercel Anda.");
+                }
 
                 if (!result.status || result.data.length === 0) {
                     dataCount.innerText = "Total: 0 Pasien";
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="4">
-                                <div class="empty-state">
-                                    <p>Tidak ada data jadwal untuk kriteria pencarian ini.</p>
-                                </div>
-                            </td>
-                        </tr>`;
+                    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p>Tidak ada data jadwal untuk kriteria pencarian ini.</p></div></td></tr>`;
                     return;
                 }
 
-                // Render Data
                 tbody.innerHTML = '';
                 dataCount.innerText = `Total: ${result.total_data} Pasien`;
 
                 result.data.forEach(item => {
                     const tr = document.createElement('tr');
-                    
                     tr.innerHTML = `
                         <td>
                             <div class="text-bold">${item.ruangan}</div>
@@ -390,7 +229,6 @@
                         <td>
                             <div class="text-bold">DPJP Utama:</div>
                             <div class="text-dim" style="color: #e2e8f0; margin-bottom: 8px;">${item.dpjp_utama}</div>
-                            
                             <div class="text-bold" style="font-size: 0.75rem;">Rawat Bersama:</div>
                             <div class="text-dim">${item.dokter_rawat_bersama}</div>
                         </td>
@@ -403,26 +241,15 @@
                 });
 
             } catch (error) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="4">
-                            <div class="empty-state" style="color: #ef4444;">
-                                <p>Terjadi kesalahan saat menghubungi API Serverless.</p>
-                                <p style="font-size: 0.8rem; margin-top: 5px;">${error.message}</p>
-                            </div>
-                        </td>
-                    </tr>`;
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Terjadi kesalahan saat menghubungi API Serverless.</p><p style="font-size: 0.8rem; margin-top: 5px;">${error.message}</p></div></td></tr>`;
             }
         }
 
-        // 3. Trigger initial fetch when page loads
         window.addEventListener('DOMContentLoaded', () => {
             fetchData();
         });
 
-        // Trigger fetch on enter key in text inputs
         document.getElementById('filter-cari').addEventListener('keypress', function(e) { if(e.key === 'Enter') fetchData(); });
-        document.getElementById('filter-dokter').addEventListener('keypress', function(e) { if(e.key === 'Enter') fetchData(); });
     </script>
 </body>
 </html>
