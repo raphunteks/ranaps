@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'GET') {
-        const { cari, tanggal } = req.query;
+        const { cari, tanggal, jenis } = req.query;
         let filteredData = cachedData;
 
         if (cari) {
@@ -31,6 +31,10 @@ module.exports = async (req, res) => {
             const [y, m, d] = tanggal.split('-');
             const fmt = `${d}-${m}-${y}`; 
             filteredData = filteredData.filter(i => i.tanggal_kunjungan.includes(fmt));
+        }
+        if (jenis) {
+            // Memfilter "riwayat" atau "antrian" sesuai yang diminta Bot WA
+            filteredData = filteredData.filter(i => i.jenis === jenis);
         }
 
         if (cachedData.length === 0) {
