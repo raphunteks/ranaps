@@ -121,7 +121,7 @@
                 <div class="input-group">
                     <label for="filter-dokter">Filter Dokter DPJP (Default)</label>
                     <select id="filter-dokter" class="glass-input">
-                        <!-- Option Default Otomatis -->
+                        <!-- Option Default -->
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="">-- Tampilkan Semua Dokter --</option>
                         <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
@@ -129,7 +129,7 @@
                         <option value="dr. Suryani, Sp.M., M.Kes">dr. Suryani, Sp.M., M.Kes</option>
                     </select>
                 </div>
-                <!-- UI Input Tanggal disembunyikan sesuai permintaan agar bersih -->
+                <!-- Tombol Sync -->
                 <div class="input-group">
                     <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
                 </div>
@@ -139,7 +139,7 @@
         <!-- Tabel Data -->
         <div class="glass-panel table-container">
             <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Rekam Medis (<span id="tanggal-today"></span>)</h3>
+                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Rekam Medis (Semua Tanggal Masuk)</h3>
                 <span style="font-size: 0.8rem; background: rgba(167, 139, 250, 0.2); padding: 4px 12px; border-radius: 20px; color: #a78bfa;" id="data-count">Total: 0 Pasien</span>
             </div>
             
@@ -163,13 +163,6 @@
     </div>
 
     <script>
-        // Set Waktu Hari Ini Otomatis di Background
-        const getTodayWITA = () => {
-            return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Makassar' }); // Format: YYYY-MM-DD
-        };
-        
-        document.getElementById('tanggal-today').innerText = getTodayWITA();
-
         function updateClock() {
             const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             const timeString = new Intl.DateTimeFormat('id-ID', options).format(new Date());
@@ -184,13 +177,15 @@
             
             const cari = document.getElementById('filter-cari').value;
             const dokter = document.getElementById('filter-dokter').value;
-            const tanggal = getTodayWITA(); // Tanggal otomatis terkirim tanpa perlu input
+            
+            // PERBAIKAN: Tidak ada lagi penambahan filter tanggal secara otomatis di background
+            // Sehingga Web Vercel akan menarik SEMUA data dari cache (Sama persis seperti Chrome Ext)
 
-            tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Melakukan injeksi dan scraping data RSUD...</p></div></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Menarik data dari Vercel Cache...</p></div></td></tr>`;
 
             try {
-                // Path relatif mencegah error routing jika di-deploy di Vercel yang sama
-                let url = `/api/jadwal?tanggal=${encodeURIComponent(tanggal)}&`;
+                // HANYA menyertakan filter nama & dokter ke URL
+                let url = `/api/jadwal?`;
                 if(cari) url += `cari=${encodeURIComponent(cari)}&`;
                 if(dokter) url += `dokter=${encodeURIComponent(dokter)}&`;
 
@@ -201,12 +196,11 @@
                 try {
                     result = JSON.parse(textData);
                 } catch (parseErr) {
-                    throw new Error("Gagal membaca JSON. Nama file backend Anda di Vercel mungkin salah. Pastikan file bernama tepat 'jadwal.js' di dalam folder 'api'.");
+                    throw new Error("Gagal membaca JSON dari server Vercel.");
                 }
 
                 if (!result.status || result.data.length === 0) {
                     dataCount.innerText = "Total: 0 Pasien";
-                    // Menampilkan pesan canggih jika data kosong akibat CSR API
                     let msg = result.message || "Tidak ada data jadwal untuk kriteria pencarian ini.";
                     tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">${msg}</p></div></td></tr>`;
                     return;
@@ -250,6 +244,10 @@
         // Jalankan Fetch otomatis saat web dibuka
         window.addEventListener('DOMContentLoaded', () => {
             fetchData();
+            
+            // Set Auto-Refresh Data di Web setiap 3 detik 
+            // (Agar Web Vercel ikut ter-update tiap kali Extension mengirim data POST baru ke API)
+            setInterval(fetchData, 3000);
         });
 
         document.getElementById('filter-cari').addEventListener('keypress', function(e) { if(e.key === 'Enter') fetchData(); });
