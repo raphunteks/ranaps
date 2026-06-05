@@ -2,10 +2,6 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/jadwal",
-      "destination": "/api/jadwal.js"
-    },
-    {
       "source": "/(.*)",
       "destination": "/public/$1"
     }
