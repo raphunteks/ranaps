@@ -110,11 +110,10 @@
                 </div>
             </div>
             
-            <!-- UPGRADE: Tambahan area Countdown Web Sync Real-Time -->
             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                 <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
                 <div style="background: rgba(99, 102, 241, 0.2); border: 1px solid var(--glass-border); border-radius: 30px; font-size: 0.85rem; padding: 4px 14px; color: white;">
-                    ⏳ Auto-Refresh Web: <span id="web-countdown" style="font-family: monospace; font-weight: bold; letter-spacing: 1px;">20s</span>
+                    ⏳ Auto-Scrape: <span id="web-countdown" style="font-family: monospace; font-weight: bold; letter-spacing: 1px;">--:--</span>
                 </div>
             </div>
         </header>
@@ -171,10 +170,9 @@
     </div>
 
     <script>
-        // API Google Apps Script Anda yang valid
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec"; 
         let currentDataHash = "";
-        let webTimer = 20; // Variabel Countdown Timer
+        let scrapeCountdownInterval = null;
 
         function updateClock() {
             const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
@@ -184,13 +182,31 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Penghitung mundur sinkronisasi Web (Real-Time UI)
-        setInterval(() => {
-            webTimer--;
-            if (webTimer < 0) webTimer = 20;
-            const webEl = document.getElementById('web-countdown');
-            if (webEl) webEl.innerText = webTimer.toString().padStart(2, '0') + 's';
-        }, 1000);
+        // MENGAMBIL WAKTU SCRAPE DARI VERCEL BRIDGE LALU MEMULAI COUNTDOWN
+        async function fetchScrapeTime() {
+            try {
+                const res = await fetch('/api/trigger');
+                const data = await res.json();
+                
+                if (data.nextScrapeTime) {
+                    if (scrapeCountdownInterval) clearInterval(scrapeCountdownInterval);
+                    
+                    scrapeCountdownInterval = setInterval(() => {
+                        let diff = data.nextScrapeTime - Date.now();
+                        const webEl = document.getElementById('web-countdown');
+                        if (!webEl) return;
+                        
+                        if (diff <= 0) {
+                            webEl.innerText = "Scraping...";
+                        } else {
+                            let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                            let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                            webEl.innerText = `${m}:${s}`;
+                        }
+                    }, 1000);
+                }
+            } catch (e) {}
+        }
 
         function gantiLayanan() {
             const layanan = document.getElementById('layanan-selector').value;
@@ -214,11 +230,6 @@
         }
 
         async function fetchData(isBackground = false) {
-            // Reset Countdown setiap sinkronisasi dilakukan
-            webTimer = 20; 
-            const webEl = document.getElementById('web-countdown');
-            if (webEl) webEl.innerText = '20s';
-
             const tbody = document.getElementById('table-body');
             const thead = document.getElementById('table-head');
             const dataCount = document.getElementById('data-count');
@@ -240,7 +251,6 @@
 
             let finalData = [];
 
-            // 1. COBA TARIK DARI VERCEL TERLEBIH DAHULU
             try {
                 let vercelUrl = `/api/${endpointName}?`;
                 if(cari) vercelUrl += `cari=${encodeURIComponent(cari)}&`;
@@ -255,9 +265,7 @@
                 statusBar.innerHTML = `🟢 Server Utama: <span class="status-main">Vercel API Connected</span>`;
 
             } catch (error) {
-                // 2. JIKA VERCEL GAGAL/KOSONG, BERALIH OTOMATIS KE GOOGLE APPS SCRIPT (GAS)
                 statusBar.innerHTML = `🟡 Fallback Mode: <span class="status-fallback">Google Sheets API Connected</span>`;
-                
                 try {
                     let gasUrl = `${GAS_URL}?type=${endpointName}`;
                     const gasRes = await fetch(gasUrl);
@@ -266,11 +274,8 @@
                     if (gasResult.status) {
                         let rawData = gasResult.data || [];
                         
-                        // Client-side filtering untuk Fallback GAS
                         finalData = rawData.filter(item => {
-                            let matchCari = true;
-                            let matchDokter = true;
-
+                            let matchCari = true; let matchDokter = true;
                             if (cari) {
                                 matchCari = (item.nama_pasien || '').toLowerCase().includes(cari) || (item.no_rm || '').toLowerCase().includes(cari);
                             }
@@ -292,12 +297,10 @@
                 }
             }
 
-            // Pengecekan Hash (Cegah kedip layar jika data tidak berubah)
             let newHash = JSON.stringify(finalData);
             if (isBackground && currentDataHash === newHash) return;
             currentDataHash = newHash;
 
-            // Tampilkan UI
             if (finalData.length === 0) {
                 dataCount.innerText = "Total: 0 Pasien";
                 tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">Tidak ada data jadwal untuk layanan & kriteria ini.</p></div></td></tr>`;
@@ -319,7 +322,6 @@
                 } else {
                     const labelJenis = endpointName.includes('Riwayat') ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
                     
-                    // Keterangan status tambahan jika ada (kolom total di Web RSUD)
                     let statusFinal = item.status || "-";
                     if (item.total && item.total !== "-" && item.total !== "") {
                         statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
@@ -338,7 +340,11 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('layanan-selector').dispatchEvent(new Event('change'));
-            setInterval(() => fetchData(true), 20000);
+            setInterval(() => {
+                fetchData(true);
+                fetchScrapeTime();
+            }, 20000);
+            fetchScrapeTime();
         });
 
         document.getElementById('filter-cari').addEventListener('keypress', function(e) { 
