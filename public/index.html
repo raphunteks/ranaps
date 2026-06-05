@@ -117,15 +117,16 @@
                 <div class="input-group">
                     <label for="layanan-selector">Pilih Layanan Poliklinik</label>
                     <select id="layanan-selector" class="glass-input" onchange="gantiLayanan()">
-                        <option value="ranap" selected>Rawat Inap</option>
-                        <option value="rajalendo_antrian">Rawat Jalan - Antrian Px Endodonsi</option>
-                        <option value="rajalendo_riwayat">Rawat Jalan - Riwayat Antrian Endodonsi</option>
-                        <option value="rajalbm_antrian">Rawat Jalan - Antrian Px Bedah Mulut</option>
-                        <option value="rajalbm_riwayat">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
+                        <!-- Menyesuaikan dengan 5 API Endpoint yang baru -->
+                        <option value="Ranap" selected>Rawat Inap</option>
+                        <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
+                        <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
+                        <option value="RajalBM_AntrianPx">Rawat Jalan - Antrian Px Bedah Mulut</option>
+                        <option value="RajalBM_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="filter-dokter">Filter Dokter DPJP (Khusus Rawat Inap)</label>
+                    <label for="filter-dokter">Filter Dokter DPJP</label>
                     <select id="filter-dokter" class="glass-input" onchange="fetchData()">
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="drg. Irmasmita Tasniadara, Sp.KG">drg. Irmasmita Tasniadara, Sp.KG</option>
@@ -179,15 +180,15 @@
             const layanan = document.getElementById('layanan-selector').value;
             const filterDokter = document.getElementById('filter-dokter');
             
-            if (layanan === 'ranap') {
+            if (layanan === 'Ranap') {
                 filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
                 filterDokter.disabled = false;
                 filterDokter.style.opacity = "1";
-            } else if (layanan.includes('rajalendo')) {
+            } else if (layanan.includes('Endo')) {
                 filterDokter.value = "drg. Irmasmita Tasniadara, Sp.KG";
                 filterDokter.disabled = true;
                 filterDokter.style.opacity = "0.6";
-            } else if (layanan.includes('rajalbm')) {
+            } else if (layanan.includes('BM')) {
                 filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
                 filterDokter.disabled = true;
                 filterDokter.style.opacity = "0.6";
@@ -204,26 +205,13 @@
             
             const cari = document.getElementById('filter-cari').value.toLowerCase();
             const dokter = document.getElementById('filter-dokter').value.toLowerCase();
-            const val = document.getElementById('layanan-selector').value;
             
-            let endpointName = '';
-            let jenisTarget = '';
-            let gasType = ''; // Kunci pemetaan untuk GAS
+            // Mengambil langsung nilai endpoint (cth: Ranap, RajalEndo_AntrianPx)
+            const endpointName = document.getElementById('layanan-selector').value; 
             
-            if (val === 'ranap') {
-                endpointName = 'jadwalranap';
-                gasType = 'ranap';
+            if (endpointName === 'Ranap') {
                 thead.innerHTML = `<tr><th>Ruang & Kamar</th><th>Data Pasien</th><th>Dokter Penanggung Jawab</th><th>Status Registrasi</th></tr>`;
             } else {
-                const parts = val.split('_');
-                endpointName = 'jadwal' + parts[0]; 
-                jenisTarget = parts[1]; 
-                
-                if (parts[0] === 'rajalendo' && parts[1] === 'antrian') gasType = 'rajal_endo_antrian';
-                else if (parts[0] === 'rajalendo' && parts[1] === 'riwayat') gasType = 'rajal_endo_riwayat';
-                else if (parts[0] === 'rajalbm' && parts[1] === 'antrian') gasType = 'rajal_bm_antrian';
-                else if (parts[0] === 'rajalbm' && parts[1] === 'riwayat') gasType = 'rajal_bm_riwayat';
-
                 thead.innerHTML = `<tr><th>No. RM</th><th>Data Pasien & Kunjungan</th><th>Penjamin & Dokter</th><th>Status</th></tr>`;
             }
 
@@ -237,8 +225,7 @@
             try {
                 let vercelUrl = `/api/${endpointName}?`;
                 if(cari) vercelUrl += `cari=${encodeURIComponent(cari)}&`;
-                if(val === 'ranap' && dokter) vercelUrl += `dokter=${encodeURIComponent(dokter)}&`;
-                if(jenisTarget) vercelUrl += `jenis=${jenisTarget}&`;
+                if(dokter) vercelUrl += `dokter=${encodeURIComponent(dokter)}&`;
 
                 const response = await fetch(vercelUrl);
                 const result = await response.json();
@@ -253,8 +240,7 @@
                 statusBar.innerHTML = `🟡 Fallback Mode: <span class="status-fallback">Google Sheets API Connected</span>`;
                 
                 try {
-                    // Hanya memanggil data dari Sheet spesifik, tidak perlu filter "jenis" lagi.
-                    let gasUrl = `${GAS_URL}?type=${gasType}`;
+                    let gasUrl = `${GAS_URL}?type=${endpointName}`;
                     const gasRes = await fetch(gasUrl);
                     const gasResult = await gasRes.json();
                     
@@ -263,14 +249,16 @@
                         
                         // Client-side filtering untuk Fallback GAS (Hanya search & dokter)
                         finalData = rawData.filter(item => {
-                            let matchCari = true;
-                            let matchDokter = true;
-
+                            let matchCari = true; let matchDokter = true;
                             if (cari) {
-                                matchCari = item.nama_pasien.toLowerCase().includes(cari) || item.no_rm.toLowerCase().includes(cari);
+                                matchCari = (item.nama_pasien || '').toLowerCase().includes(cari) || (item.no_rm || '').toLowerCase().includes(cari);
                             }
-                            if (val === 'ranap' && dokter) {
-                                matchDokter = item.dpjp_utama.toLowerCase().includes(dokter) || item.dokter_rawat_bersama.toLowerCase().includes(dokter);
+                            if (dokter) {
+                                if (endpointName === 'Ranap') {
+                                    matchDokter = (item.dpjp_utama || '').toLowerCase().includes(dokter) || (item.dokter_rawat_bersama || '').toLowerCase().includes(dokter);
+                                } else {
+                                    matchDokter = (item.dokter || '').toLowerCase().includes(dokter);
+                                }
                             }
                             return matchCari && matchDokter;
                         });
@@ -288,10 +276,9 @@
             if (isBackground && currentDataHash === newHash) return;
             currentDataHash = newHash;
 
-            // Tampilkan UI
             if (finalData.length === 0) {
                 dataCount.innerText = "Total: 0 Pasien";
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">Tidak ada data jadwal untuk layanan & kriteria ini.</p></div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">Tidak ada data untuk layanan & kriteria ini.</p></div></td></tr>`;
                 return;
             }
 
@@ -300,7 +287,7 @@
 
             finalData.forEach(item => {
                 const tr = document.createElement('tr');
-                if (val === 'ranap') {
+                if (endpointName === 'Ranap') {
                     tr.innerHTML = `
                         <td><div class="text-bold">${item.ruangan}</div><div class="text-dim">${item.no_kamar}</div></td>
                         <td><div class="text-bold">${item.nama_pasien}</div><div class="text-dim">RM: ${item.no_rm} | ${item.usia}</div></td>
@@ -308,12 +295,19 @@
                         <td><div class="text-bold">${item.tanggal_masuk}</div><div class="text-dim">Lama: ${item.lama_rawat}</div></td>
                     `;
                 } else {
-                    const labelJenis = item.jenis === 'riwayat' ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
+                    const labelJenis = endpointName.includes('Riwayat') ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
+                    
+                    // Menyisipkan keterangan status tambahan jika ada (kolom total)
+                    let statusFinal = item.status || "-";
+                    if (item.total && item.total !== "-" && item.total !== "") {
+                        statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
+                    }
+                    
                     tr.innerHTML = `
                         <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
                         <td><div class="text-bold">${item.nama_pasien} ${labelJenis}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
                         <td><div class="text-bold" style="color: #e2e8f0;">${item.dokter}</div><div class="text-dim">${item.penjamin}</div></td>
-                        <td><div class="text-bold">${item.status}</div></td>
+                        <td><div class="text-bold">${statusFinal}</div></td>
                     `;
                 }
                 tbody.appendChild(tr);
@@ -322,7 +316,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('layanan-selector').dispatchEvent(new Event('change'));
-            // Cek API di background tiap 20 detik
             setInterval(() => fetchData(true), 20000);
         });
 
