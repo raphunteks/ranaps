@@ -109,7 +109,14 @@
                     <p>High-Availability Data System (Vercel + Google Sheets Fallback)</p>
                 </div>
             </div>
-            <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
+            
+            <!-- UPGRADE: Tambahan area Countdown Web Sync Real-Time -->
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                <div class="clock-widget" id="live-clock">Memuat Waktu...</div>
+                <div style="background: rgba(99, 102, 241, 0.2); border: 1px solid var(--glass-border); border-radius: 30px; font-size: 0.85rem; padding: 4px 14px; color: white;">
+                    ⏳ Auto-Refresh Web: <span id="web-countdown" style="font-family: monospace; font-weight: bold; letter-spacing: 1px;">20s</span>
+                </div>
+            </div>
         </header>
 
         <div class="glass-panel">
@@ -167,6 +174,7 @@
         // API Google Apps Script Anda yang valid
         const GAS_URL = "https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec"; 
         let currentDataHash = "";
+        let webTimer = 20; // Variabel Countdown Timer
 
         function updateClock() {
             const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
@@ -175,6 +183,14 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        // Penghitung mundur sinkronisasi Web (Real-Time UI)
+        setInterval(() => {
+            webTimer--;
+            if (webTimer < 0) webTimer = 20;
+            const webEl = document.getElementById('web-countdown');
+            if (webEl) webEl.innerText = webTimer.toString().padStart(2, '0') + 's';
+        }, 1000);
 
         function gantiLayanan() {
             const layanan = document.getElementById('layanan-selector').value;
@@ -198,6 +214,11 @@
         }
 
         async function fetchData(isBackground = false) {
+            // Reset Countdown setiap sinkronisasi dilakukan
+            webTimer = 20; 
+            const webEl = document.getElementById('web-countdown');
+            if (webEl) webEl.innerText = '20s';
+
             const tbody = document.getElementById('table-body');
             const thead = document.getElementById('table-head');
             const dataCount = document.getElementById('data-count');
@@ -303,7 +324,7 @@
                     if (item.total && item.total !== "-" && item.total !== "") {
                         statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
                     }
-
+                    
                     tr.innerHTML = `
                         <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
                         <td><div class="text-bold">${item.nama_pasien} ${labelJenis}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
