@@ -21,25 +21,25 @@
             <div class="badge-group">
                 <div class="badge-item badge-clock" id="live-clock">Memuat Waktu...</div>
                 <div class="badge-item badge-purple">
-                    🔄 Refresh Web: <span id="web-refresh-countdown" style="font-family: monospace; font-weight: bold; margin-left:5px;">20s</span>
+                    🔄 Refresh Web: <span id="web-refresh-countdown" style="font-family: monospace; font-weight: bold; margin-left: 5px;">20s</span>
                 </div>
             </div>
         </header>
 
         <!-- PANEL FILTER -->
         <div class="glass-panel">
-            <div class="control-header">
-                <h3 class="table-title" style="font-weight: 600;">Pilih Layanan Poliklinik</h3>
-                <div class="badge-group" style="flex-direction: row;">
-                    <div class="badge-item badge-outline" id="last-update">Update Terakhir: --:--:--</div>
-                    <div class="badge-item badge-primary">
-                        ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold; margin-left: 5px;">--:--</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto;">
+            <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto; align-items: start;">
+                <!-- Kolom Pertama: Layanan & Jam Real Time -->
                 <div class="input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
+                        <label class="input-label" for="layanan-selector" style="margin-bottom: 0;">Pilih Layanan Poliklinik</label>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                            <span class="badge-item badge-outline" id="last-update" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 6px;">Update Terakhir: --:--:--</span>
+                            <span class="badge-item badge-primary" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 6px;">
+                                ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold; margin-left: 3px;">--:--</span>
+                            </span>
+                        </div>
+                    </div>
                     <select id="layanan-selector" class="glass-input" onchange="gantiLayanan()">
                         <option value="Ranap" selected>Rawat Inap</option>
                         <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
@@ -48,7 +48,9 @@
                         <option value="RajalBM_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
                     </select>
                 </div>
-                <div class="input-group">
+                
+                <div class="input-group" style="padding-top: 24px;">
+                    <label class="input-label" for="filter-dokter">Filter Dokter DPJP (Khusus Ranap)</label>
                     <select id="filter-dokter" class="glass-input" onchange="fetchData()">
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="drg. Irmasmita Tasniadara, Sp.KG">drg. Irmasmita Tasniadara, Sp.KG</option>
@@ -58,9 +60,14 @@
                         <option value="dr. Suryani, Sp.M., M.Kes">dr. Suryani, Sp.M., M.Kes</option>
                     </select>
                 </div>
-                <div class="input-group" style="grid-column: span 3; display: grid; grid-template-columns: 1fr auto; gap: 10px;">
-                    <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama pasien / No RM..." style="width:100%;">
-                    <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
+
+                <div class="input-group" style="padding-top: 24px;">
+                    <label class="input-label" for="filter-cari">Pencarian Pasien / No. RM</label>
+                    <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama atau nomor RM...">
+                </div>
+
+                <div class="input-group" style="grid-column: span 3;">
+                    <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data Sekarang</button>
                 </div>
             </div>
         </div>
@@ -99,6 +106,7 @@
         }
         setInterval(updateClock, 1000); updateClock();
 
+        // 1. PENGHITUNG MUNDUR REFRESH WEB (20 Detik)
         setInterval(() => {
             webTimer--;
             if (webTimer < 0) webTimer = 20;
@@ -106,6 +114,7 @@
             if (webEl) webEl.innerText = webTimer.toString().padStart(2, '0') + 's';
         }, 1000);
 
+        // 2. PENGHITUNG MUNDUR AUTO SCRAPE (Dari Vercel API Bridge) ANTI-STUCK
         setInterval(() => {
             const webEl = document.getElementById('scrape-countdown');
             if (!webEl) return;
@@ -212,16 +221,23 @@
                         let rawData = gasResult.data || [];
                         finalData = rawData.filter(item => {
                             let matchCari = true; let matchDokter = true;
-                            if (cari) matchCari = (item.nama_pasien || '').toLowerCase().includes(cari) || (item.no_rm || '').toLowerCase().includes(cari);
+                            if (cari) {
+                                matchCari = (item.nama_pasien || '').toLowerCase().includes(cari) || (item.no_rm || '').toLowerCase().includes(cari);
+                            }
                             if (dokter) {
-                                if (endpointName === 'Ranap') matchDokter = (item.dpjp_utama || '').toLowerCase().includes(dokter) || (item.dokter_rawat_bersama || '').toLowerCase().includes(dokter);
-                                else matchDokter = (item.dokter || '').toLowerCase().includes(dokter);
+                                if (endpointName === 'Ranap') {
+                                    matchDokter = (item.dpjp_utama || '').toLowerCase().includes(dokter) || (item.dokter_rawat_bersama || '').toLowerCase().includes(dokter);
+                                } else {
+                                    matchDokter = (item.dokter || '').toLowerCase().includes(dokter);
+                                }
                             }
                             return matchCari && matchDokter;
                         });
                     }
                 } catch (e) {
-                    if (!isBackground) tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Kedua Server (Vercel & Google Sheets) gagal dihubungi.</p></div></td></tr>`;
+                    if (!isBackground) {
+                        tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Kedua Server (Vercel & Google Sheets) gagal dihubungi.</p></div></td></tr>`;
+                    }
                     return;
                 }
             }
@@ -251,7 +267,9 @@
                 } else {
                     const labelJenis = endpointName.includes('Riwayat') ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
                     let statusFinal = item.status || "-";
-                    if (item.total && item.total !== "-" && item.total !== "") statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
+                    if (item.total && item.total !== "-" && item.total !== "") {
+                        statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
+                    }
                     
                     tr.innerHTML = `
                         <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
