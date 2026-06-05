@@ -117,7 +117,7 @@
                 <div class="input-group">
                     <label for="layanan-selector">Pilih Layanan Poliklinik</label>
                     <select id="layanan-selector" class="glass-input" onchange="gantiLayanan()">
-                        <!-- Menyesuaikan dengan 5 API Endpoint yang baru -->
+                        <!-- Nilai value disamakan persis dengan nama Endpoint Vercel & GAS -->
                         <option value="Ranap" selected>Rawat Inap</option>
                         <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
                         <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
@@ -126,7 +126,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="filter-dokter">Filter Dokter DPJP</label>
+                    <label for="filter-dokter">Filter Dokter DPJP (Khusus Rawat Inap)</label>
                     <select id="filter-dokter" class="glass-input" onchange="fetchData()">
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="drg. Irmasmita Tasniadara, Sp.KG">drg. Irmasmita Tasniadara, Sp.KG</option>
@@ -205,8 +205,6 @@
             
             const cari = document.getElementById('filter-cari').value.toLowerCase();
             const dokter = document.getElementById('filter-dokter').value.toLowerCase();
-            
-            // Mengambil langsung nilai endpoint (cth: Ranap, RajalEndo_AntrianPx)
             const endpointName = document.getElementById('layanan-selector').value; 
             
             if (endpointName === 'Ranap') {
@@ -247,9 +245,11 @@
                     if (gasResult.status) {
                         let rawData = gasResult.data || [];
                         
-                        // Client-side filtering untuk Fallback GAS (Hanya search & dokter)
+                        // Client-side filtering untuk Fallback GAS
                         finalData = rawData.filter(item => {
-                            let matchCari = true; let matchDokter = true;
+                            let matchCari = true;
+                            let matchDokter = true;
+
                             if (cari) {
                                 matchCari = (item.nama_pasien || '').toLowerCase().includes(cari) || (item.no_rm || '').toLowerCase().includes(cari);
                             }
@@ -276,9 +276,10 @@
             if (isBackground && currentDataHash === newHash) return;
             currentDataHash = newHash;
 
+            // Tampilkan UI
             if (finalData.length === 0) {
                 dataCount.innerText = "Total: 0 Pasien";
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">Tidak ada data untuk layanan & kriteria ini.</p></div></td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">Tidak ada data jadwal untuk layanan & kriteria ini.</p></div></td></tr>`;
                 return;
             }
 
@@ -297,12 +298,12 @@
                 } else {
                     const labelJenis = endpointName.includes('Riwayat') ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
                     
-                    // Menyisipkan keterangan status tambahan jika ada (kolom total)
+                    // Keterangan status tambahan jika ada (kolom total di Web RSUD)
                     let statusFinal = item.status || "-";
                     if (item.total && item.total !== "-" && item.total !== "") {
                         statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
                     }
-                    
+
                     tr.innerHTML = `
                         <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
                         <td><div class="text-bold">${item.nama_pasien} ${labelJenis}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
