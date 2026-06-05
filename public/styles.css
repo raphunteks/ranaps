@@ -1,104 +1,235 @@
+/* =========================================
+   IMPORT FONT
+   ========================================= */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+/* =========================================
+   VARIABEL GLOBAL - GLASSMORPHISM THEME
+   ========================================= */
 :root {
     --glass-bg: rgba(255, 255, 255, 0.07);
     --glass-border: rgba(255, 255, 255, 0.15);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --accent-color: #6366f1;
+    --accent-hover: #a78bfa;
     --text-primary: #ffffff;
     --text-secondary: #b3b9c5;
-    --accent-color: #6366f1;
-    --accent-hover: #4f46e5;
     --warning-color: #f59e0b;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
 
+/* =========================================
+   BASE BODY STYLES
+   ========================================= */
 body {
     background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
     color: var(--text-primary);
     min-height: 100vh;
-    padding: 2rem;
     background-attachment: fixed;
 }
 
-/* Mode Khusus Extension Popup */
-body.popup-mode { width: 320px; padding: 20px; text-align: center; }
-
+/* Background Bulat Estetik Blur */
 body::before, body::after {
     content: ''; position: fixed; border-radius: 50%; filter: blur(100px); z-index: -1;
 }
 body::before { background: rgba(99, 102, 241, 0.3); width: 400px; height: 400px; top: -100px; left: -100px; }
 body::after { background: rgba(168, 85, 247, 0.2); width: 500px; height: 500px; bottom: -150px; right: -150px; }
 
-.container { max-width: 1280px; margin: 0 auto; }
-
-.glass-panel {
-    background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--glass-border); border-radius: 16px; box-shadow: var(--glass-shadow);
-    padding: 1.5rem; margin-bottom: 1.5rem;
+/* Mode Popup Ekstensi (Ukuran Kecil) */
+body.popup-mode {
+    width: 320px;
+    padding: 20px;
+    text-align: center;
+    min-height: auto;
 }
 
-/* Layout Fleksibel Kanan Kiri (Header) */
+/* Mode Master Dashboard (Ukuran Penuh Ekstensi & Web Vercel) */
+body:not(.popup-mode) {
+    padding: 2rem;
+}
+
+.container { max-width: 1280px; margin: 0 auto; width: 100%; }
+
+/* =========================================
+   KOMPONEN KACA (GLASS PANEL)
+   ========================================= */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: var(--glass-shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* =========================================
+   HEADER DASHBOARD
+   ========================================= */
 .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
 .header-brand { display: flex; align-items: center; gap: 1.2rem; }
 .header-logo { width: 55px; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: rgba(255,255,255,0.1); padding: 4px; }
-.header-title h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px;}
+.header-title h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; line-height: 1.2;}
 .header-title p { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0; }
 
-/* Kumpulan Lencana Real-time (Pojok Kanan) */
-.badge-group { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+/* =========================================
+   LENCANA & HITUNG MUNDUR (BADGES)
+   ========================================= */
+.badge-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; }
 .badge-item {
     padding: 6px 16px; border-radius: 30px; border: 1px solid var(--glass-border);
-    font-size: 0.85rem; font-weight: 500; display: inline-block;
+    font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    white-space: nowrap;
 }
 .badge-clock { background: rgba(0,0,0,0.2); font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; color: #a78bfa; }
 .badge-primary { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; color: white; }
 .badge-purple { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: white; }
 .badge-outline { background: transparent; color: #a78bfa; border-color: rgba(167, 139, 250, 0.4); }
+.badge-update { background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 30px; border: 1px solid var(--glass-border); color: var(--accent-hover); font-size: 0.9rem; }
 
-.filter-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; align-items: end;}
+/* =========================================
+   PANEL INPUT & FILTER
+   ========================================= */
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1.2rem;
+    align-items: end;
+}
 .input-group { display: flex; flex-direction: column; }
-.input-group label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+.input-group label, .input-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; display: block; }
+
 .glass-input {
-    background: rgba(0, 0, 0, 0.15); border: 1px solid rgba(255, 255, 255, 0.1); color: white;
-    padding: 12px 16px; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s ease; outline: none; width: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    outline: none;
+    font-size: 0.9rem;
+    transition: 0.3s;
 }
 .glass-input option { background: #1e1b4b; color: white; }
 .glass-input:focus { border-color: var(--accent-color); background: rgba(0, 0, 0, 0.25); box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
 
+/* Tombol Aksi */
 .btn-sync {
     background: var(--accent-color); color: white; border: none; padding: 12px 24px; border-radius: 10px;
     cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; height: 46px; width: 100%;
 }
-.btn-sync:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); }
+.btn-sync:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); }
 
-.table-container { overflow-x: auto; border-radius: 12px; }
+.btn-outline {
+    background: rgba(167, 139, 250, 0.2); color: var(--accent-hover); border: 1px solid var(--accent-hover);
+    padding: 10px 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; font-size: 0.85rem;
+}
+.btn-outline:hover { background: var(--accent-hover); color: #0f172a; }
+
+/* =========================================
+   TABEL ESTETIK
+   ========================================= */
+.table-container { 
+    overflow-x: auto; 
+    border-radius: 12px; 
+    -webkit-overflow-scrolling: touch; /* Halus di scroll hp */
+}
+.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.table-title { font-size: 1.1rem; font-weight: 500; margin: 0; }
+
 table { width: 100%; border-collapse: collapse; text-align: left; }
-th, td { padding: 1rem; font-size: 0.85rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-th { background: rgba(0, 0, 0, 0.2); color: #a78bfa; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; font-size: 0.75rem; white-space: nowrap; }
-tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+th, td { padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }
+th { color: var(--accent-hover); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; white-space: nowrap; }
+tbody tr:hover { background: rgba(255, 255, 255, 0.04); transition: background 0.2s ease;}
 
 .text-bold { font-weight: 600; color: white; }
 .text-dim { color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px; }
-.badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 6px; }
+.badge, .data-count-badge { display: inline-block; background: rgba(167, 139, 250, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: var(--accent-hover); }
 
-.loading-state, .empty-state { text-align: center; padding: 4rem; color: var(--text-secondary); }
+/* =========================================
+   STATUS API & LOADING STATE
+   ========================================= */
+.loading-state, .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-secondary); }
 .spinner {
     display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
     border-left-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.api-status { text-align: center; font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 20px; font-family: monospace;}
+.api-status, .status-sync { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 20px; font-family: monospace;}
 .status-main { color: #a855f7; font-weight: bold; }
 .status-fallback { color: var(--warning-color); font-weight: bold; }
 
-/* Responsive Rules */
-@media (max-width: 768px) {
-    body { padding: 1rem; }
-    .header { flex-direction: column; align-items: flex-start; }
-    .badge-group { align-items: flex-start; margin-top: 15px; width: 100%;}
-    .badge-item { width: 100%; text-align: center; }
-    .filter-grid { grid-template-columns: 1fr; }
-    .input-group { grid-column: span 1 !important; }
+/* =========================================
+   KOMPONEN KHUSUS POPUP
+   ========================================= */
+.popup-title { margin-top: 0; color: var(--accent-hover); font-size: 1.2rem; margin-bottom: 5px; }
+.popup-desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4; }
+.toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem;}
+.switch { position: relative; display: inline-block; width: 40px; height: 20px; margin-bottom: 0;}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(20px); }
+.interval-select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 5px; margin-bottom: 15px; font-size: 0.8rem;}
+
+/* =========================================
+   BIG UPGRADE RESPONSIF (MOBILE & TABLET)
+   ========================================= */
+@media screen and (max-width: 900px) {
+    .filter-grid {
+        grid-template-columns: 1fr 1fr; /* Di tablet, form jadi 2 kolom */
+    }
+    .input-group:last-child {
+        grid-column: span 2; /* Tombol sinkronisasi memenuhi baris */
+    }
+}
+
+@media screen and (max-width: 768px) {
+    body:not(.popup-mode) { padding: 1rem; }
+    
+    .header { flex-direction: column; align-items: center; text-align: center; gap: 1.5rem;}
+    .header-brand { flex-direction: column; text-align: center; }
+    
+    /* Lencana Countdown berubah menyebar / bersusun di HP */
+    .badge-group {
+        width: 100%;
+        flex-direction: row;
+        justify-content: center;
+        gap: 10px;
+    }
+    .badge-item {
+        flex: 1 1 auto; /* Membuat lencana seimbang lebarnya */
+        text-align: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        padding: 8px 10px;
+    }
+
+    .filter-grid {
+        grid-template-columns: 1fr; /* Di HP, semua form input bersusun ke bawah */
+        gap: 1rem;
+    }
+    .input-group {
+        grid-column: span 1 !important; 
+    }
+    
+    .table-title { font-size: 1rem; }
+    
+    /* Penyesuaian jarak teks di tabel HP */
+    th, td { padding: 0.75rem 0.5rem; }
+}
+
+@media screen and (max-width: 480px) {
+    .header-title h1 { font-size: 1.25rem; }
+    .badge-group { flex-direction: column; }
+    .badge-item { width: 100%; }
 }
