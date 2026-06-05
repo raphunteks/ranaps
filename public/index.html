@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Rawat Inap - Rawat Jalan</title>
+    
     <link rel="icon" type="image/png" href="acalogo.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
     <div class="container">
         <header class="glass-panel header">
             <div class="header-brand">
@@ -17,23 +19,28 @@
                     <p>High-Availability Data System (Vercel + Google Sheets Fallback)</p>
                 </div>
             </div>
-            
-            <!-- Posisi Kanan Atas Identik Seperti Extension -->
-            <div class="badge-group">
+            <div class="badges-container">
                 <div class="badge-item badge-clock" id="live-clock">Memuat Waktu...</div>
-                <div class="badge-item badge-outline" id="last-update">Update Terakhir: --.--.--</div>
-                <div class="badge-item badge-primary">
-                    ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold; letter-spacing: 1px;">--:--</span>
-                </div>
-                <div class="badge-item badge-purple">
-                    🔄 Auto-Refresh Web: <span id="web-refresh-countdown" style="font-family: monospace; font-weight: bold; letter-spacing: 1px;">20s</span>
+                <div class="badge-item" style="background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: white;">
+                    🔄 Refresh Web: <span id="web-refresh-countdown" style="font-family: monospace; font-weight: bold;">20s</span>
                 </div>
             </div>
         </header>
 
         <!-- PANEL FILTER -->
         <div class="glass-panel">
-            <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto; align-items: end;">
+            <!-- UPGRADE: Lokasi Baru Jam Update & Countdown Scrape -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <h3 style="font-size: 1.1rem; font-weight: 500; margin: 0;">Kontrol Filter & Sinkronisasi</h3>
+                <div class="badges-container" style="margin-bottom: 0;">
+                    <div class="badge-item" id="last-update">Update Terakhir: --:--:--</div>
+                    <div class="badge-item badge-primary">
+                        ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold;">--:--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto;">
                 <div class="input-group">
                     <label for="layanan-selector">Pilih Layanan Poliklinik</label>
                     <select id="layanan-selector" class="glass-input" onchange="gantiLayanan()">
@@ -45,7 +52,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="filter-dokter">Filter Dokter DPJP (Khusus Rawat Inap)</label>
+                    <label for="filter-dokter">Filter Dokter DPJP</label>
                     <select id="filter-dokter" class="glass-input" onchange="fetchData()">
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="drg. Irmasmita Tasniadara, Sp.KG">drg. Irmasmita Tasniadara, Sp.KG</option>
@@ -59,8 +66,8 @@
                     <label for="filter-cari">Pencarian Pasien / No. RM</label>
                     <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama atau nomor RM...">
                 </div>
-                <div class="input-group" style="grid-column: span 3;">
-                    <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data Sekarang</button>
+                <div class="input-group" style="grid-column: span 3; justify-self: end;">
+                    <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data</button>
                 </div>
             </div>
         </div>
@@ -94,12 +101,11 @@
         function updateClock() {
             const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
             const timeString = new Intl.DateTimeFormat('id-ID', options).format(new Date());
-            const clockEl = document.getElementById('live-clock');
-            if (clockEl) clockEl.innerText = timeString.replace(/\./g, ':') + ' WITA';
+            document.getElementById('live-clock').innerText = timeString.replace(/\./g, ':') + ' WITA';
         }
         setInterval(updateClock, 1000); updateClock();
 
-        // PENGHITUNG MUNDUR REFRESH WEB (20 Detik)
+        // 1. PENGHITUNG MUNDUR REFRESH WEB (20 Detik)
         setInterval(() => {
             webTimer--;
             if (webTimer < 0) webTimer = 20;
@@ -107,7 +113,7 @@
             if (webEl) webEl.innerText = webTimer.toString().padStart(2, '0') + 's';
         }, 1000);
 
-        // PENGHITUNG MUNDUR AUTO SCRAPE (Dari Vercel API Bridge) ANTI-STUCK
+        // 2. PENGHITUNG MUNDUR AUTO SCRAPE (Dari Vercel API Bridge) ANTI-STUCK
         setInterval(() => {
             const webEl = document.getElementById('scrape-countdown');
             if (!webEl) return;
@@ -115,15 +121,17 @@
             if (isScrapingNow) {
                 webEl.innerText = "Scraping...";
                 webEl.style.color = "#fbbf24";
-            } else if (targetScrapeTime > Date.now()) {
+            } else if (targetScrapeTime) {
                 let diff = targetScrapeTime - Date.now();
-                let m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                webEl.innerText = `${m}:${s}`;
-                webEl.style.color = "white";
-            } else {
-                webEl.innerText = "Menyiapkan...";
-                webEl.style.color = "#94a3b8";
+                if (diff <= 0) {
+                    webEl.innerText = "Menyiapkan...";
+                    webEl.style.color = "#94a3b8";
+                } else {
+                    let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                    let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                    webEl.innerText = `${m}:${s}`;
+                    webEl.style.color = "white";
+                }
             }
         }, 1000);
 
@@ -167,7 +175,7 @@
             const webEl = document.getElementById('web-refresh-countdown');
             if (webEl) webEl.innerText = '20s';
 
-            fetchScrapeTime(); 
+            fetchScrapeTime(); // Sinkronkan juga info waktu Scrape
             
             const tbody = document.getElementById('table-body');
             const thead = document.getElementById('table-head');
