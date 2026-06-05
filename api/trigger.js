@@ -1,5 +1,6 @@
 let needsRefresh = false;
 let pendingNotification = "";
+let nextScrapeTime = 0; // JEMBATAN WAKTU AUTO-SCRAPE REAL-TIME
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,12 +12,14 @@ module.exports = async (req, res) => {
     if (req.method === 'POST') {
         if (req.body.refresh !== undefined) needsRefresh = req.body.refresh;
         if (req.body.notify !== undefined) pendingNotification = req.body.notify;
-        return res.status(200).json({ status: true, needsRefresh, notify: pendingNotification });
+        if (req.body.nextScrapeTime !== undefined) nextScrapeTime = req.body.nextScrapeTime; // Simpan waktu dari Ekstensi
+        return res.status(200).json({ status: true, needsRefresh, notify: pendingNotification, nextScrapeTime });
     }
 
     if (req.method === 'GET') {
         let currentNotif = pendingNotification;
         pendingNotification = ""; // Kosongkan setelah dibaca oleh Bot WA
-        return res.status(200).json({ needsRefresh, notify: currentNotif });
+        // Kembalikan waktu ke Website Vercel
+        return res.status(200).json({ needsRefresh, notify: currentNotif, nextScrapeTime });
     }
 };
