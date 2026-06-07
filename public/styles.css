@@ -15,6 +15,8 @@
     --text-primary: #ffffff;
     --text-secondary: #b3b9c5;
     --warning-color: #f59e0b;
+    --success-color: #10b981;
+    --danger-color: #ef4444;
 }
 
 * {
@@ -32,14 +34,27 @@ body {
     color: var(--text-primary);
     min-height: 100vh;
     background-attachment: fixed;
+    overflow-x: hidden;
 }
 
 /* Background Bulat Estetik Blur */
 body::before, body::after {
-    content: ''; position: fixed; border-radius: 50%; filter: blur(100px); z-index: -1;
+    content: ''; 
+    position: fixed; 
+    border-radius: 50%; 
+    filter: blur(100px); 
+    z-index: -1;
 }
-body::before { background: rgba(99, 102, 241, 0.3); width: 400px; height: 400px; top: -100px; left: -100px; }
-body::after { background: rgba(168, 85, 247, 0.2); width: 500px; height: 500px; bottom: -150px; right: -150px; }
+body::before { 
+    background: rgba(99, 102, 241, 0.3); 
+    width: 400px; height: 400px; 
+    top: -100px; left: -100px; 
+}
+body::after { 
+    background: rgba(168, 85, 247, 0.2); 
+    width: 500px; height: 500px; 
+    bottom: -150px; right: -150px; 
+}
 
 /* Mode Popup Ekstensi (Ukuran Kecil) */
 body.popup-mode {
@@ -49,12 +64,16 @@ body.popup-mode {
     min-height: auto;
 }
 
-/* Mode Master Dashboard (Ukuran Penuh Ekstensi & Web Vercel) */
+/* Mode Master Dashboard (Ukuran Penuh) */
 body:not(.popup-mode) {
     padding: 2rem;
 }
 
-.container { max-width: 1280px; margin: 0 auto; width: 100%; }
+.container { 
+    max-width: 1280px; 
+    margin: 0 auto; 
+    width: 100%; 
+}
 
 /* =========================================
    KOMPONEN KACA (GLASS PANEL)
@@ -68,43 +87,98 @@ body:not(.popup-mode) {
     box-shadow: var(--glass-shadow);
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* =========================================
    HEADER DASHBOARD
    ========================================= */
-.header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-.header-brand { display: flex; align-items: center; gap: 1.2rem; }
-.header-logo { width: 55px; height: auto; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background: rgba(255,255,255,0.1); padding: 4px; }
-.header-title h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; line-height: 1.2;}
-.header-title p { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0; }
+.header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap; 
+    gap: 1rem; 
+}
+.header-brand { 
+    display: flex; 
+    align-items: center; 
+    gap: 1.2rem; 
+}
+.header-logo { 
+    width: 55px; 
+    height: auto; 
+    border-radius: 12px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+    background: rgba(255,255,255,0.1); 
+    padding: 4px; 
+}
+.header-title h1 { 
+    font-size: 1.5rem; 
+    font-weight: 600; 
+    letter-spacing: 0.5px; 
+    margin-bottom: 4px; 
+    line-height: 1.2;
+}
+.header-title p { 
+    color: var(--text-secondary); 
+    font-size: 0.85rem; 
+    margin-top: 0; 
+}
 
 /* =========================================
-   LENCANA & HITUNG MUNDUR (BADGES)
+   LENCANA (BADGES)
    ========================================= */
-.badge-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-end; }
+.badge-group { 
+    display: flex; 
+    flex-wrap: wrap; 
+    align-items: center; 
+    gap: 8px; 
+    justify-content: flex-end; 
+}
 .badge-item {
-    padding: 6px 16px; border-radius: 30px; border: 1px solid var(--glass-border);
-    font-size: 0.85rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 6px 16px; 
+    border-radius: 30px; 
+    border: 1px solid var(--glass-border);
+    font-size: 0.85rem; 
+    font-weight: 500; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 6px;
     white-space: nowrap;
 }
-.badge-clock { background: rgba(0,0,0,0.2); font-family: monospace; font-size: 1.1rem; letter-spacing: 1px; color: #a78bfa; }
+.badge-clock { 
+    background: rgba(0,0,0,0.2); 
+    font-family: monospace; 
+    font-size: 1.1rem; 
+    letter-spacing: 1px; 
+    color: #a78bfa; 
+}
 .badge-primary { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; color: white; }
 .badge-purple { background: rgba(168, 85, 247, 0.2); border-color: #a855f7; color: white; }
 .badge-outline { background: transparent; color: #a78bfa; border-color: rgba(167, 139, 250, 0.4); }
-.badge-update { background: rgba(0,0,0,0.2); padding: 8px 16px; border-radius: 30px; border: 1px solid var(--glass-border); color: var(--accent-hover); font-size: 0.9rem; }
 
 /* =========================================
    PANEL INPUT & FILTER
    ========================================= */
 .filter-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr auto;
+    grid-template-columns: 1fr 1fr 1fr auto;
     gap: 1.2rem;
     align-items: end;
 }
-.input-group { display: flex; flex-direction: column; }
-.input-group label, .input-label { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; display: block; }
+.input-group { 
+    display: flex; 
+    flex-direction: column; 
+}
+.input-group label, .input-label { 
+    font-size: 0.8rem; 
+    color: var(--text-secondary); 
+    margin-bottom: 6px; 
+    font-weight: 500; 
+    display: block; 
+}
 
 .glass-input {
     width: 100%;
@@ -116,22 +190,138 @@ body:not(.popup-mode) {
     outline: none;
     font-size: 0.9rem;
     transition: 0.3s;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+/* Tambahan panah untuk select dropdown */
+select.glass-input {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem top 50%;
+    background-size: 0.65rem auto;
+    padding-right: 2.5rem;
 }
 .glass-input option { background: #1e1b4b; color: white; }
-.glass-input:focus { border-color: var(--accent-color); background: rgba(0, 0, 0, 0.25); box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); }
+.glass-input:focus { 
+    border-color: var(--accent-color); 
+    background: rgba(0, 0, 0, 0.25); 
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2); 
+}
 
-/* Tombol Aksi */
+/* =========================================
+   TOMBOL (BUTTONS)
+   ========================================= */
 .btn-sync {
-    background: var(--accent-color); color: white; border: none; padding: 12px 24px; border-radius: 10px;
-    cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease; height: 46px; width: 100%;
+    background: var(--accent-color); 
+    color: white; 
+    border: none; 
+    padding: 12px 24px; 
+    border-radius: 10px;
+    cursor: pointer; 
+    font-weight: 600; 
+    font-size: 0.9rem; 
+    transition: all 0.3s ease; 
+    height: 46px; 
+    width: 100%;
 }
-.btn-sync:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); }
+.btn-sync:hover { 
+    background: #4f46e5; 
+    transform: translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); 
+}
+.btn-sync:active { transform: translateY(0); }
 
-.btn-outline {
-    background: rgba(167, 139, 250, 0.2); color: var(--accent-hover); border: 1px solid var(--accent-hover);
-    padding: 10px 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; font-size: 0.85rem;
+/* Tombol Aksi di Popup */
+.btn-action { 
+    background: rgba(16, 185, 129, 0.1); 
+    color: var(--success-color); 
+    border: 1px solid var(--success-color); 
+    padding: 10px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    width: 100%; 
+    font-weight: 600; 
+    transition: 0.3s; 
+    font-size: 0.9rem; 
+    margin-bottom: 10px; 
 }
-.btn-outline:hover { background: var(--accent-hover); color: #0f172a; }
+.btn-action:hover { background: var(--success-color); color: #fff; }
+
+.btn-primary { 
+    background: rgba(167, 139, 250, 0.2); 
+    color: var(--accent-hover); 
+    border: 1px solid var(--accent-hover); 
+    padding: 10px; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    width: 100%; 
+    font-weight: 600; 
+    transition: 0.3s; 
+    font-size: 0.9rem; 
+}
+.btn-primary:hover { background: var(--accent-hover); color: #0f172a; }
+
+/* =========================================
+   SWITCH TOGGLE (POPUP)
+   ========================================= */
+.toggle-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 12px; 
+    font-size: 0.9rem; 
+    font-weight: 500;
+}
+.switch { 
+    position: relative; 
+    display: inline-block; 
+    width: 46px; 
+    height: 24px; 
+    margin: 0;
+}
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { 
+    position: absolute; 
+    cursor: pointer; 
+    top: 0; left: 0; right: 0; bottom: 0; 
+    background-color: rgba(255,255,255,0.2); 
+    transition: .4s; 
+    border-radius: 34px; 
+}
+.slider:before { 
+    position: absolute; 
+    content: ""; 
+    height: 18px; 
+    width: 18px; 
+    left: 3px; 
+    bottom: 3px; 
+    background-color: white; 
+    transition: .4s; 
+    border-radius: 50%; 
+}
+input:checked + .slider { background-color: var(--accent-color); }
+input:checked + .slider:before { transform: translateX(22px); }
+
+.interval-label { 
+    font-size: 0.8rem; 
+    color: var(--text-secondary); 
+    display: block; 
+    text-align: left; 
+    margin: 15px 0 5px 0; 
+}
+.interval-select { 
+    width: 100%; 
+    background: rgba(0,0,0,0.3); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    color: white; 
+    padding: 10px; 
+    border-radius: 8px; 
+    margin-bottom: 20px; 
+    font-size: 0.9rem; 
+    outline: none; 
+}
+.interval-select option { background: #1e1b4b; }
 
 /* =========================================
    TABEL ESTETIK
@@ -140,96 +330,114 @@ body:not(.popup-mode) {
     overflow-x: auto; 
     border-radius: 12px; 
     -webkit-overflow-scrolling: touch; /* Halus di scroll hp */
+    margin-top: 10px;
 }
-.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.table-title { font-size: 1.1rem; font-weight: 500; margin: 0; }
 
-table { width: 100%; border-collapse: collapse; text-align: left; }
-th, td { padding: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 0.85rem; }
-th { color: var(--accent-hover); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; white-space: nowrap; }
-tbody tr:hover { background: rgba(255, 255, 255, 0.04); transition: background 0.2s ease;}
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    text-align: left; 
+    white-space: nowrap; /* Mencegah teks patah di mobile */
+}
+
+th, td { 
+    padding: 1rem; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+    font-size: 0.85rem; 
+}
+
+th { 
+    color: var(--accent-hover); 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    font-size: 0.75rem; 
+    letter-spacing: 0.5px; 
+}
+
+tbody tr:hover { 
+    background: rgba(255, 255, 255, 0.04); 
+    transition: background 0.2s ease;
+}
 
 .text-bold { font-weight: 600; color: white; }
 .text-dim { color: var(--text-secondary); font-size: 0.8rem; margin-top: 4px; }
-.badge, .data-count-badge { display: inline-block; background: rgba(167, 139, 250, 0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: var(--accent-hover); }
 
 /* =========================================
-   STATUS API & LOADING STATE
+   RESPONSIVE DESIGN (MOBILE & TABLET FRIENDLY)
    ========================================= */
-.loading-state, .empty-state { text-align: center; padding: 4rem 1rem; color: var(--text-secondary); }
-.spinner {
-    display: inline-block; width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1);
-    border-left-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
 
-.api-status, .status-sync { text-align: center; font-size: 0.8rem; color: rgba(255,255,255,0.5); margin-top: 20px; font-family: monospace;}
-.status-main { color: #a855f7; font-weight: bold; }
-.status-fallback { color: var(--warning-color); font-weight: bold; }
-
-/* =========================================
-   KOMPONEN KHUSUS POPUP
-   ========================================= */
-.popup-title { margin-top: 0; color: var(--accent-hover); font-size: 1.2rem; margin-bottom: 5px; }
-.popup-desc { font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.4; }
-.toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.8rem;}
-.switch { position: relative; display: inline-block; width: 40px; height: 20px; margin-bottom: 0;}
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
-.slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-input:checked + .slider { background-color: var(--accent-color); }
-input:checked + .slider:before { transform: translateX(20px); }
-.interval-select { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 5px; margin-bottom: 15px; font-size: 0.8rem;}
-
-/* =========================================
-   BIG UPGRADE RESPONSIF (MOBILE & TABLET)
-   ========================================= */
-@media screen and (max-width: 900px) {
+/* Untuk Tablet dan Layar Sedang */
+@media screen and (max-width: 992px) {
     .filter-grid {
-        grid-template-columns: 1fr 1fr; /* Di tablet, form jadi 2 kolom */
+        grid-template-columns: 1fr 1fr; /* Jadi 2 kolom */
     }
     .input-group:last-child {
-        grid-column: span 2; /* Tombol sinkronisasi memenuhi baris */
+        grid-column: span 2; /* Tombol sinkronisasi memenuhi lebar 2 kolom */
     }
 }
 
+/* Untuk Mobile (HP) */
 @media screen and (max-width: 768px) {
-    body:not(.popup-mode) { padding: 1rem; }
+    body:not(.popup-mode) { 
+        padding: 1rem; /* Kurangi padding utama di HP */
+    }
     
-    .header { flex-direction: column; align-items: center; text-align: center; gap: 1.5rem;}
-    .header-brand { flex-direction: column; text-align: center; }
+    .header { 
+        flex-direction: column; 
+        align-items: center; 
+        text-align: center; 
+        gap: 1.2rem;
+    }
     
-    /* Lencana Countdown berubah menyebar / bersusun di HP */
+    .header-brand { 
+        flex-direction: column; 
+        text-align: center; 
+    }
+    
     .badge-group {
         width: 100%;
         flex-direction: row;
         justify-content: center;
-        gap: 10px;
+        gap: 8px;
     }
+    
     .badge-item {
-        flex: 1 1 auto; /* Membuat lencana seimbang lebarnya */
+        flex: 1 1 auto; /* Lencana mengisi ruang kosong */
         text-align: center;
-        justify-content: center;
         font-size: 0.75rem;
         padding: 8px 10px;
     }
 
     .filter-grid {
-        grid-template-columns: 1fr; /* Di HP, semua form input bersusun ke bawah */
+        grid-template-columns: 1fr; /* Form input menumpuk ke bawah (1 kolom) */
         gap: 1rem;
     }
+    
     .input-group {
         grid-column: span 1 !important; 
     }
     
-    .table-title { font-size: 1rem; }
-    
-    /* Penyesuaian jarak teks di tabel HP */
-    th, td { padding: 0.75rem 0.5rem; }
+    .glass-panel {
+        padding: 1rem; /* Kurangi padding panel di dalam HP */
+    }
+
+    /* Penyesuaian jarak teks di tabel HP agar lebih padat namun tetap bisa di scroll horizontal */
+    th, td { 
+        padding: 0.75rem 0.5rem; 
+    }
 }
 
+/* Untuk Layar HP Sangat Kecil */
 @media screen and (max-width: 480px) {
-    .header-title h1 { font-size: 1.25rem; }
-    .badge-group { flex-direction: column; }
-    .badge-item { width: 100%; }
+    .header-title h1 { 
+        font-size: 1.25rem; 
+    }
+    
+    .badge-group { 
+        flex-direction: column; /* Lencana menumpuk atas bawah jika layar terlalu sempit */
+    }
+    
+    .badge-item { 
+        width: 100%; 
+    }
 }
