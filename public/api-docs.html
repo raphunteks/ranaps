@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumentasi API - RSUD Monitoring</title>
+    
+    <link rel="icon" type="image/png" href="acalogo.png">
+    
+    <!-- MENGGUNAKAN STYLES.CSS UTAMA ANDA -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Tambahan CSS Khusus untuk Tampilan Dokumentasi (Code Blocks & API Badges) -->
+    <style>
+        .api-method {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: #fff;
+            margin-right: 10px;
+        }
+        .method-get { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .method-post { background: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.4); }
+        
+        .endpoint-url {
+            font-family: monospace;
+            font-size: 1rem;
+            color: #a78bfa;
+            word-break: break-all;
+            display: flex;
+            align-items: center;
+        }
+
+        .code-block {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 16px;
+            overflow-x: auto;
+            position: relative;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .code-block .string { color: #a3e635; }
+        .code-block .number { color: #f472b6; }
+        .code-block .boolean { color: #38bdf8; }
+        .code-block .key { color: #a78bfa; font-weight: 500; }
+
+        .btn-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-copy:hover {
+            background: var(--accent-color);
+        }
+
+        .param-table {
+            width: 100%;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        .param-table th { background: rgba(0,0,0,0.2); }
+        .param-table td { border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .req-badge {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+        
+        .opt-badge {
+            background: rgba(148, 163, 184, 0.2);
+            color: #cbd5e1;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <header class="glass-panel header">
+            <div class="header-brand">
+                <img src="acalogo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+                <div class="header-title">
+                    <h1>Dokumentasi API Terpadu</h1>
+                    <p>Panduan Integrasi Endpoint Rawat Inap & Rawat Jalan (Vercel Node.js)</p>
+                </div>
+            </div>
+            <div class="badge-group">
+                <div class="badge-item badge-primary">🌐 Base URL: /api/</div>
+                <div class="badge-item badge-purple">🛡️ CORS Enabled</div>
+            </div>
+        </header>
+
+        <!-- NAVIGASI CEPAT -->
+        <div class="nav-links">
+            <a href="#ranap" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🏥 Rawat Inap</a>
+            <a href="#rajal-bm" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🦷 Rajal Bedah Mulut</a>
+            <a href="#rajal-endo" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🔬 Rajal Endodonsi</a>
+        </div>
+
+        <!-- PANEL INFORMASI UMUM -->
+        <div class="glass-panel">
+            <h2 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--accent-hover);">Informasi Umum</h2>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 15px;">
+                API ini menggunakan memori sementara (In-Memory Cache) di serverless Vercel. Data diperbarui melalui metode <strong>POST</strong> (biasanya oleh Scraper/Bot) dan dapat diambil informasinya menggunakan metode <strong>GET</strong> oleh aplikasi Frontend (Web/Mobile).
+            </p>
+            <div style="background: rgba(245, 158, 11, 0.1); border-left: 4px solid var(--warning-color); padding: 12px 16px; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: #fde68a;">
+                <strong>⚠️ Catatan Serverless:</strong> Karena sifat Vercel Serverless, variabel RAM akan direset secara berkala. Pastikan Scraper melakukan POST data setidaknya setiap beberapa menit sekali untuk menjaga data tetap <em>fresh</em>.
+            </div>
+        </div>
+
+        <!-- ENDPOINT 1: RAWAT INAP -->
+        <div id="ranap" class="glass-panel">
+            <div style="display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="font-size: 1.3rem; margin: 0;">🏥 Data Rawat Inap</h2>
+            </div>
+
+            <!-- GET METHOD -->
+            <div style="margin-bottom: 40px;">
+                <div class="endpoint-url">
+                    <span class="api-method method-get">GET</span>
+                    <span>/api/Ranap</span>
+                </div>
+                <p class="text-dim" style="margin-top: 10px;">Mengambil data pasien Rawat Inap. Mendukung filter pencarian berdasarkan nama, no RM, dokter, dan tanggal.</p>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Query Parameters</h4>
+                <table class="param-table">
+                    <thead><tr><th>Parameter</th><th>Tipe</th><th>Status</th><th>Deskripsi</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="text-bold">cari</span></td><td>String</td><td><span class="opt-badge">Opsional</span></td><td>Mencari nama pasien atau Nomor RM. (Case-insensitive)</td></tr>
+                        <tr><td><span class="text-bold">dokter</span></td><td>String</td><td><span class="opt-badge">Opsional</span></td><td>Filter berdasarkan nama Dokter DPJP / Rawat Bersama.</td></tr>
+                        <tr><td><span class="text-bold">tanggal</span></td><td>String</td><td><span class="opt-badge">Opsional</span></td><td>Format <code style="background:rgba(0,0,0,0.3); padding:2px 4px; border-radius:4px;">YYYY-MM-DD</code>. Filter berdasarkan tanggal masuk.</td></tr>
+                    </tbody>
+                </table>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Request (Fetch JS)</h4>
+                <div class="code-block">
+                    <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    <pre><code><span class="key">const</span> url = <span class="string">'https://domain-anda.vercel.app/api/Ranap?cari=budi&dokter=isnoe'</span>;
+<span class="key">const</span> response = <span class="key">await</span> fetch(url);
+<span class="key">const</span> result = <span class="key">await</span> response.json();
+console.log(result);</code></pre>
+                </div>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Response (200 OK)</h4>
+                <div class="code-block">
+                    <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  <span class="key">"status"</span>: <span class="boolean">true</span>,
+  <span class="key">"total_data"</span>: <span class="number">1</span>,
+  <span class="key">"last_updated"</span>: <span class="string">"24/10/2023, 14:30:00 WITA"</span>,
+  <span class="key">"data"</span>: [
+    {
+      <span class="key">"ruangan"</span>: <span class="string">"VVIP A"</span>,
+      <span class="key">"no_kamar"</span>: <span class="string">"Kamar 01"</span>,
+      <span class="key">"nama_pasien"</span>: <span class="string">"Budi Santoso"</span>,
+      <span class="key">"no_rm"</span>: <span class="string">"123456"</span>,
+      <span class="key">"usia"</span>: <span class="string">"45 Tahun"</span>,
+      <span class="key">"dpjp_utama"</span>: <span class="string">"drg. Isnoe Suryandanu, Sp.BM"</span>,
+      <span class="key">"dokter_rawat_bersama"</span>: <span class="string">"-"</span>,
+      <span class="key">"tanggal_masuk"</span>: <span class="string">"22-10-2023"</span>,
+      <span class="key">"lama_rawat"</span>: <span class="string">"2 Hari"</span>
+    }
+  ]
+}</code></pre>
+                </div>
+            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 30px 0;">
+
+            <!-- POST METHOD -->
+            <div>
+                <div class="endpoint-url">
+                    <span class="api-method method-post">POST</span>
+                    <span>/api/Ranap</span>
+                </div>
+                <p class="text-dim" style="margin-top: 10px;">Mengirim/Menyinkronkan data array JSON ke server. Digunakan oleh Scraper untuk mengupdate data <em>In-Memory</em>.</p>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Body Request (application/json)</h4>
+                <table class="param-table">
+                    <thead><tr><th>Tipe Data</th><th>Status</th><th>Deskripsi</th></tr></thead>
+                    <tbody>
+                        <tr><td>Array of Objects</td><td><span class="req-badge">Wajib</span></td><td>Array yang berisi list JSON detail pasien.</td></tr>
+                    </tbody>
+                </table>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Request Payload</h4>
+                <div class="code-block">
+                    <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    <pre><code>[
+  {
+    <span class="key">"ruangan"</span>: <span class="string">"ICU"</span>,
+    <span class="key">"no_kamar"</span>: <span class="string">"Bed 3"</span>,
+    <span class="key">"nama_pasien"</span>: <span class="string">"Ahmad"</span>,
+    <span class="key">"no_rm"</span>: <span class="string">"987654"</span>
+  }
+]</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- ENDPOINT 2: RAJAL BM -->
+        <div id="rajal-bm" class="glass-panel">
+            <div style="display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="font-size: 1.3rem; margin: 0;">🦷 Antrian Rawat Jalan (Bedah Mulut & Endodonsi)</h2>
+            </div>
+            <p class="text-dim" style="margin-bottom: 20px;">Berlaku untuk Endpoint: <code>/api/RajalBM_AntrianPx</code>, <code>/api/RajalBM_RiwayatAntrianPx</code>, <code>/api/RajalEndo_AntrianPx</code>, <code>/api/RajalEndo_RiwayatAntrianPx</code></p>
+
+            <!-- GET METHOD -->
+            <div style="margin-bottom: 40px;">
+                <div class="endpoint-url">
+                    <span class="api-method method-get">GET</span>
+                    <span>/api/{NamaEndpointRajal}</span>
+                </div>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Response (200 OK)</h4>
+                <div class="code-block">
+                    <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    <pre><code>{
+  <span class="key">"status"</span>: <span class="boolean">true</span>,
+  <span class="key">"total_data"</span>: <span class="number">2</span>,
+  <span class="key">"last_updated"</span>: <span class="string">"24/10/2023, 08:15:00 WITA"</span>,
+  <span class="key">"data"</span>: [
+    {
+      <span class="key">"no_rm"</span>: <span class="string">"334455"</span>,
+      <span class="key">"nama_pasien"</span>: <span class="string">"Siti Aminah"</span>,
+      <span class="key">"tanggal_kunjungan"</span>: <span class="string">"24-10-2023"</span>,
+      <span class="key">"dokter"</span>: <span class="string">"drg. Isnoe Suryandanu, Sp.BM"</span>,
+      <span class="key">"penjamin"</span>: <span class="string">"BPJS Kesehatan"</span>,
+      <span class="key">"status"</span>: <span class="string">"Sudah Dilayani"</span>,
+      <span class="key">"total"</span>: <span class="string">"Rp 0"</span>
+    }
+  ]
+}</code></pre>
+                </div>
+            </div>
+
+             <!-- POST METHOD -->
+             <div>
+                <div class="endpoint-url">
+                    <span class="api-method method-post">POST</span>
+                    <span>/api/{NamaEndpointRajal}</span>
+                </div>
+                
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Request Payload</h4>
+                <div class="code-block">
+                    <button class="btn-copy" onclick="copyCode(this)">Copy</button>
+                    <pre><code>[
+  {
+    <span class="key">"no_rm"</span>: <span class="string">"334455"</span>,
+    <span class="key">"nama_pasien"</span>: <span class="string">"Siti Aminah"</span>,
+    <span class="key">"tanggal_kunjungan"</span>: <span class="string">"24-10-2023"</span>,
+    <span class="key">"dokter"</span>: <span class="string">"drg. Isnoe Suryandanu, Sp.BM"</span>,
+    <span class="key">"penjamin"</span>: <span class="string">"BPJS Kesehatan"</span>,
+    <span class="key">"status"</span>: <span class="string">"Sudah Dilayani"</span>,
+    <span class="key">"total"</span>: <span class="string">"Rp 0"</span>
+  }
+]</code></pre>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT UNTUK FITUR COPY CODE -->
+    <script>
+        function copyCode(btn) {
+            // Mengambil elemen <pre> yang ada tepat di sebelah tombol (parent)
+            const preElement = btn.nextElementSibling;
+            
+            // Extract text murni
+            const textToCopy = preElement.innerText;
+            
+            // Proses salin ke clipboard
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalText = btn.innerText;
+                btn.innerText = "Copied!";
+                btn.style.background = "#10b981"; // Ubah jadi hijau success
+                btn.style.borderColor = "#10b981";
+                
+                // Kembalikan tombol seperti semula setelah 2 detik
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                    btn.style.background = "rgba(255, 255, 255, 0.1)";
+                    btn.style.borderColor = "rgba(255, 255, 255, 0.2)";
+                }, 2000);
+            }).catch(err => {
+                console.error("Gagal menyalin teks: ", err);
+                // Fallback untuk browser lama iframe Canvas
+                const textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    btn.innerText = "Copied!";
+                } catch (e) {}
+                document.body.removeChild(textarea);
+            });
+        }
+    </script>
+</body>
+</html>
