@@ -56,16 +56,8 @@ body::after {
     bottom: -150px; right: -150px; 
 }
 
-/* Mode Popup Ekstensi (Ukuran Kecil) */
-body.popup-mode {
-    width: 320px;
-    padding: 20px;
-    text-align: center;
-    min-height: auto;
-}
-
 /* Mode Master Dashboard (Ukuran Penuh) */
-body:not(.popup-mode) {
+body {
     padding: 2rem;
 }
 
@@ -194,7 +186,7 @@ body:not(.popup-mode) {
     -moz-appearance: none;
     appearance: none;
 }
-/* Tambahan panah untuk select dropdown */
+/* Panah select dropdown khusus */
 select.glass-input {
     background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
     background-repeat: no-repeat;
@@ -210,126 +202,12 @@ select.glass-input {
 }
 
 /* =========================================
-   TOMBOL (BUTTONS)
-   ========================================= */
-.btn-sync {
-    background: var(--accent-color); 
-    color: white; 
-    border: none; 
-    padding: 12px 24px; 
-    border-radius: 10px;
-    cursor: pointer; 
-    font-weight: 600; 
-    font-size: 0.9rem; 
-    transition: all 0.3s ease; 
-    height: 46px; 
-    width: 100%;
-}
-.btn-sync:hover { 
-    background: #4f46e5; 
-    transform: translateY(-2px); 
-    box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4); 
-}
-.btn-sync:active { transform: translateY(0); }
-
-/* Tombol Aksi di Popup */
-.btn-action { 
-    background: rgba(16, 185, 129, 0.1); 
-    color: var(--success-color); 
-    border: 1px solid var(--success-color); 
-    padding: 10px; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    width: 100%; 
-    font-weight: 600; 
-    transition: 0.3s; 
-    font-size: 0.9rem; 
-    margin-bottom: 10px; 
-}
-.btn-action:hover { background: var(--success-color); color: #fff; }
-
-.btn-primary { 
-    background: rgba(167, 139, 250, 0.2); 
-    color: var(--accent-hover); 
-    border: 1px solid var(--accent-hover); 
-    padding: 10px; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    width: 100%; 
-    font-weight: 600; 
-    transition: 0.3s; 
-    font-size: 0.9rem; 
-}
-.btn-primary:hover { background: var(--accent-hover); color: #0f172a; }
-
-/* =========================================
-   SWITCH TOGGLE (POPUP)
-   ========================================= */
-.toggle-row { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    margin-bottom: 12px; 
-    font-size: 0.9rem; 
-    font-weight: 500;
-}
-.switch { 
-    position: relative; 
-    display: inline-block; 
-    width: 46px; 
-    height: 24px; 
-    margin: 0;
-}
-.switch input { opacity: 0; width: 0; height: 0; }
-.slider { 
-    position: absolute; 
-    cursor: pointer; 
-    top: 0; left: 0; right: 0; bottom: 0; 
-    background-color: rgba(255,255,255,0.2); 
-    transition: .4s; 
-    border-radius: 34px; 
-}
-.slider:before { 
-    position: absolute; 
-    content: ""; 
-    height: 18px; 
-    width: 18px; 
-    left: 3px; 
-    bottom: 3px; 
-    background-color: white; 
-    transition: .4s; 
-    border-radius: 50%; 
-}
-input:checked + .slider { background-color: var(--accent-color); }
-input:checked + .slider:before { transform: translateX(22px); }
-
-.interval-label { 
-    font-size: 0.8rem; 
-    color: var(--text-secondary); 
-    display: block; 
-    text-align: left; 
-    margin: 15px 0 5px 0; 
-}
-.interval-select { 
-    width: 100%; 
-    background: rgba(0,0,0,0.3); 
-    border: 1px solid rgba(255,255,255,0.2); 
-    color: white; 
-    padding: 10px; 
-    border-radius: 8px; 
-    margin-bottom: 20px; 
-    font-size: 0.9rem; 
-    outline: none; 
-}
-.interval-select option { background: #1e1b4b; }
-
-/* =========================================
    TABEL ESTETIK
    ========================================= */
 .table-container { 
     overflow-x: auto; 
     border-radius: 12px; 
-    -webkit-overflow-scrolling: touch; /* Halus di scroll hp */
+    -webkit-overflow-scrolling: touch; 
     margin-top: 10px;
 }
 
@@ -372,13 +250,13 @@ tbody tr:hover {
         grid-template-columns: 1fr 1fr; /* Jadi 2 kolom */
     }
     .input-group:last-child {
-        grid-column: span 2; /* Tombol sinkronisasi memenuhi lebar 2 kolom */
+        grid-column: span 2; /* Full width untuk elemen terakhir di tablet */
     }
 }
 
 /* Untuk Mobile (HP) */
 @media screen and (max-width: 768px) {
-    body:not(.popup-mode) { 
+    body { 
         padding: 1rem; /* Kurangi padding utama di HP */
     }
     
@@ -396,16 +274,16 @@ tbody tr:hover {
     
     .badge-group {
         width: 100%;
-        flex-direction: row;
+        flex-direction: column; /* Lencana susun bawah agar tidak sempit */
         justify-content: center;
         gap: 8px;
     }
     
     .badge-item {
-        flex: 1 1 auto; /* Lencana mengisi ruang kosong */
+        width: 100%;
         text-align: center;
-        font-size: 0.75rem;
-        padding: 8px 10px;
+        font-size: 0.85rem;
+        padding: 10px 10px;
     }
 
     .filter-grid {
@@ -425,19 +303,17 @@ tbody tr:hover {
     th, td { 
         padding: 0.75rem 0.5rem; 
     }
+    
+    /* Mengatasi link API panjang yang keluar batas */
+    .api-link-wrapper p {
+        font-size: 0.75rem !important;
+        word-break: break-all;
+    }
 }
 
 /* Untuk Layar HP Sangat Kecil */
 @media screen and (max-width: 480px) {
     .header-title h1 { 
         font-size: 1.25rem; 
-    }
-    
-    .badge-group { 
-        flex-direction: column; /* Lencana menumpuk atas bawah jika layar terlalu sempit */
-    }
-    
-    .badge-item { 
-        width: 100%; 
     }
 }
