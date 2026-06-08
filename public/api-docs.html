@@ -127,8 +127,8 @@
         <!-- NAVIGASI CEPAT -->
         <div class="nav-links">
             <a href="#ranap" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🏥 Rawat Inap</a>
-            <a href="#rajal-bm" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🦷 Rajal Bedah Mulut</a>
-            <a href="#rajal-endo" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🔬 Rajal Endodonsi</a>
+            <a href="#rajal-bm" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">🦷 Rawat Jalan</a>
+            <a href="#trigger-api" class="btn-outline" style="text-decoration: none; text-align: center; width: auto;">⏱️ Realtime Trigger API</a>
         </div>
 
         <!-- PANEL INFORMASI UMUM -->
@@ -258,47 +258,47 @@ console.log(result);</code></pre>
 
                 <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Response (200 OK)</h4>
                 <div class="code-block">
+        <!-- ENDPOINT 3: TRIGGER VERCEL -->
+        <div id="trigger-api" class="glass-panel">
+            <div style="display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px; margin-bottom: 20px;">
+                <h2 style="font-size: 1.3rem; margin: 0;">⏱️ Trigger / Sinkronisasi Realtime</h2>
+            </div>
+            <p class="text-dim" style="margin-bottom: 20px;">Endpoint: <code>/api/trigger</code> ini mengatur visibilitas state sinkronisasi hitung mundur (countdown) antar dashboard pengguna. Ketika Scraper di browser ekstensi aktif, Vercel akan broadcast trigger ke semua dashboard UI terhubung.</p>
+
+            <div style="margin-bottom: 40px;">
+                <div class="endpoint-url">
+                    <span class="api-method method-get">GET</span>
+                    <span>/api/trigger</span>
+                </div>
+
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Response (200 OK)</h4>
+                <div class="code-block">
                     <button class="btn-copy" onclick="copyCode(this)">Copy</button>
                     <pre><code>{
-  <span class="key">"status"</span>: <span class="boolean">true</span>,
-  <span class="key">"total_data"</span>: <span class="number">2</span>,
-  <span class="key">"last_updated"</span>: <span class="string">"24/10/2023, 08:15:00 WITA"</span>,
-  <span class="key">"data"</span>: [
-    {
-      <span class="key">"no_rm"</span>: <span class="string">"334455"</span>,
-      <span class="key">"nama_pasien"</span>: <span class="string">"Siti Aminah"</span>,
-      <span class="key">"tanggal_kunjungan"</span>: <span class="string">"24-10-2023"</span>,
-      <span class="key">"dokter"</span>: <span class="string">"drg. Isnoe Suryandanu, Sp.BM"</span>,
-      <span class="key">"penjamin"</span>: <span class="string">"BPJS Kesehatan"</span>,
-      <span class="key">"status"</span>: <span class="string">"Sudah Dilayani"</span>,
-      <span class="key">"total"</span>: <span class="string">"Rp 0"</span>
-    }
-  ]
+  <span class="key">"needsRefresh"</span>: <span class="boolean">false</span>,
+  <span class="key">"notify"</span>: <span class="string">""</span>,
+  <span class="key">"nextScrapeTime"</span>: <span class="number">1698115200000</span>,
+  <span class="key">"isScraping"</span>: <span class="boolean">true</span>,
+  <span class="key">"lastUpdateStr"</span>: <span class="string">"24/10/2023, 14:30:00 WITA"</span>
 }</code></pre>
                 </div>
             </div>
-
-             <!-- POST METHOD -->
-             <div>
+            
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 30px 0;">
+            
+            <div>
                 <div class="endpoint-url">
                     <span class="api-method method-post">POST</span>
-                    <span>/api/{NamaEndpointRajal}</span>
+                    <span>/api/trigger</span>
                 </div>
                 
-                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Request Payload</h4>
+                <h4 style="margin-top: 20px; font-size: 0.95rem;">Contoh Request Payload (Scraper ke Vercel)</h4>
                 <div class="code-block">
                     <button class="btn-copy" onclick="copyCode(this)">Copy</button>
-                    <pre><code>[
-  {
-    <span class="key">"no_rm"</span>: <span class="string">"334455"</span>,
-    <span class="key">"nama_pasien"</span>: <span class="string">"Siti Aminah"</span>,
-    <span class="key">"tanggal_kunjungan"</span>: <span class="string">"24-10-2023"</span>,
-    <span class="key">"dokter"</span>: <span class="string">"drg. Isnoe Suryandanu, Sp.BM"</span>,
-    <span class="key">"penjamin"</span>: <span class="string">"BPJS Kesehatan"</span>,
-    <span class="key">"status"</span>: <span class="string">"Sudah Dilayani"</span>,
-    <span class="key">"total"</span>: <span class="string">"Rp 0"</span>
-  }
-]</code></pre>
+                    <pre><code>{
+    <span class="key">"isScraping"</span>: <span class="boolean">true</span>,
+    <span class="key">"lastUpdateStr"</span>: <span class="string">"24/10/2023, 14:30:00 WITA"</span>
+}</code></pre>
                 </div>
             </div>
         </div>
