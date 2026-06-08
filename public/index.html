@@ -4,292 +4,220 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Rawat Inap - Rawat Jalan</title>
-    
     <link rel="icon" type="image/png" href="acalogo.png">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
+        <!-- HEADER -->
         <header class="glass-panel header">
             <div class="header-brand">
                 <img src="acalogo.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
                 <div class="header-title">
-                    <h1>Monitoring Rawat Inap - Rawat Jalan</h1>
+                    <h1>Sistem Antrian & Riwayat RSUD</h1>
                     <p>High-Availability Data System (Vercel + Google Sheets Fallback)</p>
                 </div>
             </div>
             <div class="badge-group">
-                <div class="badge-item badge-clock" id="live-clock">Memuat Waktu...</div>
-                <div class="badge-item badge-purple">
-                    🔄 Refresh Web: <span id="web-refresh-countdown" style="font-family: monospace; font-weight: bold; margin-left: 5px;">20s</span>
+                <div class="badge-item badge-clock" id="live-clock" style="background: rgba(0,0,0,0.3); color: #fff; border-color: rgba(255,255,255,0.1); padding: 10px 20px; font-size: 1rem;">--:--:-- WITA</div>
+                <div class="badge-item" id="last-update" style="background: rgba(167, 139, 250, 0.2); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); padding: 10px 20px; font-size: 0.9rem; border-radius: 30px;">
+                    Update Terakhir: --:--:--
+                </div>
+                <div class="badge-item badge-primary" style="padding: 10px 20px; font-size: 1rem; border-radius: 30px;">
+                    ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold; margin-left: 5px;">--:--</span>
                 </div>
             </div>
         </header>
 
         <!-- PANEL FILTER -->
         <div class="glass-panel">
-            <div class="filter-grid" style="grid-template-columns: 1fr 1fr auto; align-items: start;">
-                <!-- Kolom Pertama: Layanan & Jam Real Time -->
+            <div class="filter-grid" style="grid-template-columns: 1fr 1fr 1fr;">
                 <div class="input-group">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 4px;">
-                        <label class="input-label" for="layanan-selector" style="margin-bottom: 0;">Pilih Layanan Poliklinik</label>
-                        <div style="display: flex; gap: 6px; align-items: center;">
-                            <span class="badge-item badge-outline" id="last-update" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 6px;">Update Terakhir: --:--:--</span>
-                            <span class="badge-item badge-primary" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 6px;">
-                                ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold; margin-left: 3px;">--:--</span>
-                            </span>
-                        </div>
-                    </div>
-                    <select id="layanan-selector" class="glass-input" onchange="gantiLayanan()">
+                    <label class="input-label" style="display: flex; justify-content: space-between;">
+                        Pilih Layanan Poliklinik
+                        <span style="color: #6366f1; font-size: 0.75rem;">🔄 Auto Refresh: 20s</span>
+                    </label>
+                    <select id="layanan-selector" class="glass-input">
                         <option value="Ranap" selected>Rawat Inap</option>
-                        <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
-                        <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
                         <option value="RajalBM_AntrianPx">Rawat Jalan - Antrian Px Bedah Mulut</option>
                         <option value="RajalBM_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
+                        <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
+                        <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
+                        <option value="RajalPerio_AntrianPx">Rawat Jalan - Antrian Px Periodonsia</option>
+                        <option value="RajalPerio_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Periodonsia</option>
                     </select>
                 </div>
                 
-                <div class="input-group" style="padding-top: 24px;">
-                    <label class="input-label" for="filter-dokter">Filter Dokter DPJP (Khusus Ranap)</label>
-                    <select id="filter-dokter" class="glass-input" onchange="fetchData()">
+                <div class="input-group">
+                    <label class="input-label">Filter Dokter DPJP</label>
+                    <select id="filter-dokter" class="glass-input">
                         <option value="drg. Isnoe Suryandanu, Sp.BM" selected>drg. Isnoe Suryandanu, Sp.BM</option>
                         <option value="drg. Irmasmita Tasniadara, Sp.KG">drg. Irmasmita Tasniadara, Sp.KG</option>
+                        <option value="drg. SULASTRIANAH., Sp.Perio (K)">drg. SULASTRIANAH., Sp.Perio (K)</option>
                         <option value="">-- Tampilkan Semua Dokter --</option>
-                        <option value="drg. Kardiani Latief, M.Kes">drg. Kardiani Latief, M.Kes</option>
-                        <option value="drg. Putri Sinapoy">drg. Putri Sinapoy</option>
-                        <option value="dr. Suryani, Sp.M., M.Kes">dr. Suryani, Sp.M., M.Kes</option>
                     </select>
                 </div>
 
-                <div class="input-group" style="padding-top: 24px;">
-                    <label class="input-label" for="filter-cari">Pencarian Pasien / No. RM</label>
-                    <input type="text" id="filter-cari" class="glass-input" placeholder="Masukkan nama atau nomor RM...">
-                </div>
-
-                <div class="input-group" style="grid-column: span 3;">
-                    <button class="btn-sync" onclick="fetchData()">Sinkronisasi Data Sekarang</button>
+                <div class="input-group">
+                    <label class="input-label">Pencarian Pasien / No. RM</label>
+                    <input type="text" id="filter-cari" class="glass-input" placeholder="Ketik di sini...">
                 </div>
             </div>
         </div>
 
-        <!-- TABEL DATA -->
-        <div class="glass-panel table-container">
-            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 1rem; font-weight: 500;">Manifest Tabel Medis</h3>
-                <span class="badge" style="background: rgba(167, 139, 250, 0.2); padding: 4px 12px; color: #a78bfa;" id="data-count">Total: 0 Pasien</span>
+        <!-- TABEL DATA & LINK API -->
+        <div class="glass-panel">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 1.2rem; font-weight: 600; margin: 0;">Manifest Tabel Medis</h3>
+                <span class="badge-item" style="background: rgba(167, 139, 250, 0.2); color: #a78bfa;" id="data-count">0 Pasien</span>
             </div>
             
-            <table>
-                <thead id="table-head"></thead>
-                <tbody id="table-body"></tbody>
-            </table>
-        </div>
-        
-        <div class="api-status" id="api-status-bar">
-            🟢 Server Status: Menunggu...
+            <div class="api-link-wrapper" style="background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); word-break: break-all;">
+                <p style="font-size: 0.85rem; margin: 0; color: #94a3b8;">🔗 API Utama (Vercel): <span style="color: #818cf8;" id="api-link">/api/Ranap</span></p>
+                <p style="font-size: 0.85rem; margin: 6px 0 0 0; color: #94a3b8;">🔗 API Fallback (GAS): <span style="color: #10b981;" id="api-gas-link">https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=Ranap</span></p>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead id="table-head"></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <!-- LOGIKA EMBED LANGSUNG AGAR TIDAK HILANG -->
     <script>
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec"; 
-        let currentDataHash = "";
-        let webTimer = 20; 
-        
-        let targetScrapeTime = 0;
-        let isScrapingNow = false;
+        document.addEventListener('DOMContentLoaded', () => {
+            // Live Clock
+            setInterval(() => {
+                const timeString = new Intl.DateTimeFormat('id-ID', { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
+                document.getElementById('live-clock').innerText = timeString.replace(/\./g, ':') + ' WITA';
+            }, 1000);
 
-        function updateClock() {
-            const options = { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-            const timeString = new Intl.DateTimeFormat('id-ID', options).format(new Date());
-            const clockEl = document.getElementById('live-clock');
-            if (clockEl) clockEl.innerText = timeString.replace(/\./g, ':') + ' WITA';
-        }
-        setInterval(updateClock, 1000); updateClock();
+            // Sync Data Trigger & Countdown Vercel
+            setInterval(async () => {
+                try {
+                    const res = await fetch('/api/trigger');
+                    const data = await res.json();
+                    
+                    const webEl = document.getElementById('scrape-countdown');
+                    const updateEl = document.getElementById('last-update');
+                    
+                    if (data.lastUpdateStr) updateEl.innerText = "Update Terakhir: " + data.lastUpdateStr;
 
-        // 1. PENGHITUNG MUNDUR REFRESH WEB (20 Detik)
-        setInterval(() => {
-            webTimer--;
-            if (webTimer < 0) webTimer = 20;
-            const webEl = document.getElementById('web-refresh-countdown');
-            if (webEl) webEl.innerText = webTimer.toString().padStart(2, '0') + 's';
-        }, 1000);
+                    if (data.isScraping) {
+                        webEl.innerText = "Scraping...";
+                        webEl.style.color = "#fbbf24";
+                    } else if (data.nextScrapeTime && data.nextScrapeTime > Date.now()) {
+                        let diff = data.nextScrapeTime - Date.now();
+                        let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                        let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                        webEl.innerText = `${m}:${s}`;
+                        webEl.style.color = "#fff";
+                    } else {
+                        webEl.innerText = "Menyiapkan...";
+                        webEl.style.color = "#94a3b8";
+                    }
+                } catch(e) {}
+            }, 1000);
 
-        // 2. PENGHITUNG MUNDUR AUTO SCRAPE (Dari Vercel API Bridge) ANTI-STUCK
-        setInterval(() => {
-            const webEl = document.getElementById('scrape-countdown');
-            if (!webEl) return;
-
-            if (isScrapingNow) {
-                webEl.innerText = "Scraping...";
-                webEl.style.color = "#fbbf24";
-            } else if (targetScrapeTime > Date.now()) {
-                let diff = targetScrapeTime - Date.now();
-                let m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                webEl.innerText = `${m}:${s}`;
-                webEl.style.color = "white";
-            } else {
-                webEl.innerText = "Menyiapkan...";
-                webEl.style.color = "#94a3b8";
-            }
-        }, 1000);
-
-        async function fetchScrapeTime() {
-            try {
-                const res = await fetch('/api/trigger');
-                const data = await res.json();
-                
-                if (data.nextScrapeTime) targetScrapeTime = data.nextScrapeTime;
-                if (data.isScraping !== undefined) isScrapingNow = data.isScraping;
-                if (data.lastUpdateStr) {
-                    let el = document.getElementById('last-update');
-                    if (el) el.innerText = "Update Terakhir: " + data.lastUpdateStr;
-                }
-            } catch (e) {}
-        }
-
-        function gantiLayanan() {
-            const layanan = document.getElementById('layanan-selector').value;
+            const layananSelector = document.getElementById('layanan-selector');
             const filterDokter = document.getElementById('filter-dokter');
-            
-            if (layanan === 'Ranap') {
-                filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
-                filterDokter.disabled = false;
-                filterDokter.style.opacity = "1";
-            } else if (layanan.includes('Endo')) {
-                filterDokter.value = "drg. Irmasmita Tasniadara, Sp.KG";
-                filterDokter.disabled = true;
-                filterDokter.style.opacity = "0.6";
-            } else if (layanan.includes('BM')) {
-                filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
-                filterDokter.disabled = true;
-                filterDokter.style.opacity = "0.6";
-            }
-            currentDataHash = ""; 
-            fetchData();
-        }
-
-        async function fetchData(isBackground = false) {
-            webTimer = 20; 
-            const webEl = document.getElementById('web-refresh-countdown');
-            if (webEl) webEl.innerText = '20s';
-
-            fetchScrapeTime(); 
-            
+            const filterCari = document.getElementById('filter-cari');
             const tbody = document.getElementById('table-body');
             const thead = document.getElementById('table-head');
-            const dataCount = document.getElementById('data-count');
-            const statusBar = document.getElementById('api-status-bar');
             
-            const cari = document.getElementById('filter-cari').value.toLowerCase();
-            const dokter = document.getElementById('filter-dokter').value.toLowerCase();
-            const endpointName = document.getElementById('layanan-selector').value; 
-            
-            if (endpointName === 'Ranap') {
-                thead.innerHTML = `<tr><th>Ruang & Kamar</th><th>Data Pasien</th><th>Dokter Penanggung Jawab</th><th>Status Registrasi</th></tr>`;
-            } else {
-                thead.innerHTML = `<tr><th>No. RM</th><th>Data Pasien & Kunjungan</th><th>Penjamin & Dokter</th><th>Status</th></tr>`;
-            }
-
-            if (!isBackground) {
-                tbody.innerHTML = `<tr><td colspan="4"><div class="loading-state"><div class="spinner"></div><p>Sinkronisasi Server...</p></div></td></tr>`;
-            }
-
-            let finalData = [];
-
-            try {
-                let vercelUrl = `/api/${endpointName}?`;
-                if(cari) vercelUrl += `cari=${encodeURIComponent(cari)}&`;
-                if(dokter) vercelUrl += `dokter=${encodeURIComponent(dokter)}&`;
-
-                const response = await fetch(vercelUrl);
-                const result = await response.json();
-
-                if (!result.status || result.data.length === 0) throw new Error("Vercel Kosong/Down");
+            const renderTable = async () => {
+                const endpoint = layananSelector.value;
+                const cari = filterCari.value.toLowerCase();
+                const dokter = filterDokter.value.toLowerCase();
                 
-                finalData = result.data;
-                statusBar.innerHTML = `🟢 Server Utama: <span class="status-main">Vercel API Connected</span>`;
-
-            } catch (error) {
-                statusBar.innerHTML = `🟡 Fallback Mode: <span class="status-fallback">Google Sheets API Connected</span>`;
-                try {
-                    let gasUrl = `${GAS_URL}?type=${endpointName}`;
-                    const gasRes = await fetch(gasUrl);
-                    const gasResult = await gasRes.json();
-                    
-                    if (gasResult.status) {
-                        let rawData = gasResult.data || [];
-                        finalData = rawData.filter(item => {
-                            let matchCari = true; let matchDokter = true;
-                            if (cari) {
-                                matchCari = (item.nama_pasien || '').toLowerCase().includes(cari) || (item.no_rm || '').toLowerCase().includes(cari);
-                            }
-                            if (dokter) {
-                                if (endpointName === 'Ranap') {
-                                    matchDokter = (item.dpjp_utama || '').toLowerCase().includes(dokter) || (item.dokter_rawat_bersama || '').toLowerCase().includes(dokter);
-                                } else {
-                                    matchDokter = (item.dokter || '').toLowerCase().includes(dokter);
-                                }
-                            }
-                            return matchCari && matchDokter;
-                        });
-                    }
-                } catch (e) {
-                    if (!isBackground) {
-                        tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state" style="color: #ef4444;"><p>Kedua Server (Vercel & Google Sheets) gagal dihubungi.</p></div></td></tr>`;
-                    }
-                    return;
-                }
-            }
-
-            let newHash = JSON.stringify(finalData);
-            if (isBackground && currentDataHash === newHash) return;
-            currentDataHash = newHash;
-
-            if (finalData.length === 0) {
-                dataCount.innerText = "Total: 0 Pasien";
-                tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><p style="line-height: 1.6; font-size: 0.9rem;">Tidak ada data jadwal untuk layanan & kriteria ini.</p></div></td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = '';
-            dataCount.innerText = `Total: ${finalData.length} Pasien`;
-
-            finalData.forEach(item => {
-                const tr = document.createElement('tr');
-                if (endpointName === 'Ranap') {
-                    tr.innerHTML = `
-                        <td><div class="text-bold">${item.ruangan}</div><div class="text-dim">${item.no_kamar}</div></td>
-                        <td><div class="text-bold">${item.nama_pasien}</div><div class="text-dim">RM: ${item.no_rm} | ${item.usia}</div></td>
-                        <td><div class="text-bold">${item.dpjp_utama}</div><div class="text-dim">Bersama: ${item.dokter_rawat_bersama}</div></td>
-                        <td><div class="text-bold">${item.tanggal_masuk}</div><div class="text-dim">Lama: ${item.lama_rawat}</div></td>
-                    `;
+                document.getElementById('api-link').innerText = `/api/${endpoint}`;
+                document.getElementById('api-gas-link').innerText = `https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`;
+                
+                if (endpoint === 'Ranap') {
+                    thead.innerHTML = `<tr><th>RUANG & KAMAR</th><th>DATA PASIEN</th><th>DOKTER DPJP</th><th>REGISTRASI</th></tr>`;
                 } else {
-                    const labelJenis = endpointName.includes('Riwayat') ? '<span class="badge" style="background:#059669;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Riwayat</span>' : '<span class="badge" style="background:#2563eb;color:white;padding:2px 8px;border-radius:10px;font-size:0.6rem;margin-left:5px;">Antrian Px</span>';
-                    let statusFinal = item.status || "-";
-                    if (item.total && item.total !== "-" && item.total !== "") {
-                        statusFinal += `<br><span style="font-size:0.75rem; color:#a78bfa; font-weight:normal; margin-top:4px; display:block;">${item.total}</span>`;
-                    }
-                    
-                    tr.innerHTML = `
-                        <td><div class="text-bold" style="font-size: 1.1em;">${item.no_rm}</div></td>
-                        <td><div class="text-bold">${item.nama_pasien} ${labelJenis}</div><div class="text-dim">📅 Kunjungan: ${item.tanggal_kunjungan}</div></td>
-                        <td><div class="text-bold" style="color: #e2e8f0;">${item.dokter}</div><div class="text-dim">${item.penjamin}</div></td>
-                        <td><div class="text-bold">${statusFinal}</div></td>
-                    `;
+                    thead.innerHTML = `<tr><th>NO. RM</th><th>DATA PASIEN & KUNJUNGAN</th><th>PENJAMIN & DOKTER</th><th>STATUS</th></tr>`;
                 }
-                tbody.appendChild(tr);
+
+                try {
+                    let vercelUrl = `/api/${endpoint}?`;
+                    if(cari) vercelUrl += `cari=${encodeURIComponent(cari)}&`;
+                    if(dokter) vercelUrl += `dokter=${encodeURIComponent(dokter)}&`;
+
+                    const response = await fetch(vercelUrl);
+                    const result = await response.json();
+
+                    // Fallback to GAS if Vercel is empty or unavailable
+                    let data = result.data || [];
+                    if (!result.status || data.length === 0) {
+                         const gasRes = await fetch(`https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`);
+                         const gasData = await gasRes.json();
+                         data = gasData.data || [];
+                    }
+
+                    document.getElementById('data-count').innerText = `${data.length} Pasien`;
+
+                    if (data.length === 0) {
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #ef4444;">Tidak ada data untuk layanan ini. Pastikan scraper berjalan.</td></tr>`;
+                        return;
+                    }
+
+                    tbody.innerHTML = '';
+                    data.forEach(item => {
+                        const tr = document.createElement('tr');
+                        if (endpoint === 'Ranap') {
+                            tr.innerHTML = `
+                                <td><div style="font-weight:600; color:#fff;">${item.ruangan}</div><div style="color:#94a3b8; font-size:0.8rem;">${item.no_kamar}</div></td>
+                                <td><div style="font-weight:600; color:#fff;">${item.nama_pasien}</div><div style="color:#94a3b8; font-size:0.8rem;">RM: ${item.no_rm} | ${item.usia}</div></td>
+                                <td><div style="font-weight:600; color:#fff;">${item.dpjp_utama}</div></td>
+                                <td><div style="font-weight:600; color:#fff;">${item.tanggal_masuk}</div><div style="color:#94a3b8; font-size:0.8rem;">Lama: ${item.lama_rawat}</div></td>
+                            `;
+                        } else {
+                            let totalTag = item.total && item.total !== '-' ? `<span style="display:block; color:#a78bfa; font-size:0.8rem;">Rp ${item.total}</span>` : '';
+                            tr.innerHTML = `
+                                <td><div style="font-weight:600; color:#fff; font-size: 1.1em;">${item.no_rm}</div></td>
+                                <td><div style="font-weight:600; color:#fff;">${item.nama_pasien}</div><div style="color:#94a3b8; font-size:0.8rem;">📅 ${item.tanggal_kunjungan}</div></td>
+                                <td><div style="font-weight:600; color:#fff;">${item.dokter}</div><div style="color:#94a3b8; font-size:0.8rem;">${item.penjamin}</div></td>
+                                <td><div style="font-weight:600; color:#fff;">${item.status}</div>${totalTag}</td>
+                            `;
+                        }
+                        tbody.appendChild(tr);
+                    });
+                } catch (error) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #ef4444;">Menunggu sinkronisasi dari background scraper...</td></tr>`;
+                }
+            };
+
+            layananSelector.addEventListener('change', () => {
+                let val = layananSelector.value;
+                if(val === 'Ranap') {
+                    filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
+                    filterDokter.disabled = false;
+                } else if(val.includes('Endo')) {
+                    filterDokter.value = "drg. Irmasmita Tasniadara, Sp.KG";
+                    filterDokter.disabled = true;
+                } else if(val.includes('BM')) {
+                    filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
+                    filterDokter.disabled = true;
+                } else if(val.includes('Perio')) {
+                    // Update Dropdown Spesifik Periodonsia Sesuai Request
+                    filterDokter.value = "drg. SULASTRIANAH., Sp.Perio (K)";
+                    filterDokter.disabled = true;
+                } else {
+                    filterDokter.value = "";
+                    filterDokter.disabled = true;
+                }
+                renderTable();
             });
-        }
 
-        window.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('layanan-selector').dispatchEvent(new Event('change'));
-            setInterval(() => fetchData(true), 20000);
-            fetchScrapeTime();
-        });
+            filterDokter.addEventListener('change', renderTable);
+            filterCari.addEventListener('input', () => setTimeout(renderTable, 500));
 
-        document.getElementById('filter-cari').addEventListener('keypress', function(e) { 
-            if(e.key === 'Enter') { currentDataHash = ""; fetchData(false); }
+            setInterval(renderTable, 20000);
+            renderTable();
         });
     </script>
 </body>
