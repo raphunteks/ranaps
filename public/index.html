@@ -18,7 +18,6 @@
                     <p>High-Availability Data System (Vercel + Google Sheets Fallback)</p>
                 </div>
             </div>
-            <!-- LENCANA JAM DI HEADER -->
             <div class="badge-group">
                 <div class="badge-item badge-clock" id="live-clock" style="background: rgba(0,0,0,0.3); color: #fff; border-color: rgba(255,255,255,0.1); padding: 10px 20px; font-size: 1rem;">--:--:-- WITA</div>
             </div>
@@ -41,12 +40,10 @@
                         <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
                         <option value="RajalPerio_AntrianPx">Rawat Jalan - Antrian Px Periodonsia</option>
                         <option value="RajalPerio_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Periodonsia</option>
-                        <!-- FITUR BARU UMUM -->
                         <option value="RajalUmum_AntrianPx">Rawat Jalan - Antrian Px Umum</option>
                         <option value="RajalUmum_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Umum</option>
                     </select>
 
-                    <!-- KONTINER STATUS & LENCANA UPDATE TERAKHIR -->
                     <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.8rem; color: #94a3b8;">Status Auto-Scrape:</span>
@@ -106,7 +103,7 @@
                 document.getElementById('live-clock').innerText = timeString.replace(/\./g, ':') + ' WITA';
             }, 1000);
 
-            // Tabel Auto Refresh Countdown Fix (Jalan Mundur Realtime)
+            // Tabel Auto Refresh Countdown
             let refreshTimer = 20;
             const refreshEl = document.getElementById('auto-refresh-countdown');
             setInterval(() => {
@@ -119,29 +116,31 @@
             const webEl = document.getElementById('scrape-countdown');
             const updateEl = document.getElementById('last-update');
 
-            // Map untuk menyesuaikan Selector dengan Object Key API
-            const apiMap = {
-                'Ranap': 'lastUpdateStrRanap',
-                'RajalBM_AntrianPx': 'lastUpdateStrRajalAntrianBM',
-                'RajalBM_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatBM',
-                'RajalEndo_AntrianPx': 'lastUpdateStrRajalAntrianEndo',
-                'RajalEndo_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatEndo',
-                'RajalPerio_AntrianPx': 'lastUpdateStrRajalAntrianPerio',
-                'RajalPerio_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatPerio',
-                'RajalUmum_AntrianPx': 'lastUpdateStrRajalAntrianUmum',
-                'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
-            };
+            // Simpan teks original dropdown
+            Array.from(layananSelector.options).forEach(opt => { opt.dataset.baseText = opt.text; });
 
-            // Sync Data Trigger & Countdown Vercel
+            // Sync Data Trigger & Countdown Vercel dari Struktur JSON Baru yg Flat
             setInterval(async () => {
                 try {
                     const res = await fetch('/api/trigger');
                     const data = await res.json();
                     
-                    let ep = layananSelector.value;
-                    let epStatusStr = data.updates ? data.updates[apiMap[ep]] : null;
+                    const apiMap = {
+                        'Ranap': 'lastUpdateStrRanap',
+                        'RajalBM_AntrianPx': 'lastUpdateStrRajalAntrianBM',
+                        'RajalBM_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatBM',
+                        'RajalEndo_AntrianPx': 'lastUpdateStrRajalAntrianEndo',
+                        'RajalEndo_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatEndo',
+                        'RajalPerio_AntrianPx': 'lastUpdateStrRajalAntrianPerio',
+                        'RajalPerio_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatPerio',
+                        'RajalUmum_AntrianPx': 'lastUpdateStrRajalAntrianUmum',
+                        'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
+                    };
 
-                    // FIX LOGIC DISABLED/NONAKTIF UNTUK VERCEL DASHBOARD
+                    let ep = layananSelector.value;
+                    let epStatusStr = data[apiMap[ep]];
+
+                    // FIX LOGIC NON-AKTIF
                     if (epStatusStr === "Mode Non-Aktif") {
                         webEl.innerHTML = `🚫 Mode Non-Aktif`;
                         webEl.style.color = "#ef4444";
@@ -149,10 +148,8 @@
                         webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
                         updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
                     } else {
-                        // Render Tanggal Update
                         if (epStatusStr) updateEl.innerText = "Update Terakhir: " + epStatusStr;
                         
-                        // Render Status Countdown
                         if (data.isScraping) {
                             webEl.innerHTML = `🔄 Scraping Berjalan...`;
                             webEl.style.color = "#fbbf24";
@@ -174,11 +171,10 @@
                         }
                     }
 
-                    // Sinkronisasi status Dropdown Text (Menambah label ❌ Nonaktif)
+                    // Sinkronisasi status Dropdown Text
                     Array.from(layananSelector.options).forEach(opt => {
-                        if (!opt.dataset.baseText) opt.dataset.baseText = opt.text;
-                        let optStatus = data.updates ? data.updates[apiMap[opt.value]] : null;
-                        if (optStatus === "Mode Non-Aktif") {
+                        let targetEp = data[apiMap[opt.value]];
+                        if (targetEp && targetEp === "Mode Non-Aktif") {
                             opt.text = `${opt.dataset.baseText} (❌ Nonaktif)`;
                         } else {
                             opt.text = opt.dataset.baseText;
@@ -194,7 +190,7 @@
             const thead = document.getElementById('table-head');
             
             const renderTable = async () => {
-                refreshTimer = 20; // Reset Auto-Refresh Visual tiap data baru dimuat
+                refreshTimer = 20; // Reset Auto-Refresh Visual
                 
                 const endpoint = layananSelector.value;
                 const cari = filterCari.value.toLowerCase();
@@ -217,7 +213,6 @@
                     const response = await fetch(vercelUrl);
                     const result = await response.json();
 
-                    // Fallback to GAS if Vercel is empty or unavailable
                     let data = result.data || [];
                     if (!result.status || data.length === 0) {
                          const gasRes = await fetch(`https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`);
