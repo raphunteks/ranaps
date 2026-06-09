@@ -50,10 +50,10 @@
                     <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.8rem; color: #94a3b8;">Status Auto-Scrape:</span>
-                            <span id="scrape-countdown" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(167, 139, 250, 0.2); font-weight: bold;">⏳ Menyiapkan...</span>
+                            <span id="status-badge" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(167, 139, 250, 0.2); font-weight: bold;">⏳ Menyiapkan...</span>
                         </div>
                         <div style="display: flex; justify-content: flex-end;">
-                            <div class="badge-item badge-update" id="last-update" style="background: #463d6b; color: #bfa8ff; border: 1px solid #5d5386; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.8rem !important; padding: 6px 14px !important; margin: 0;">
+                            <div class="badge-item badge-update" id="endpoint-update-badge" style="background: #463d6b; color: #bfa8ff; border: 1px solid #5d5386; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.8rem !important; padding: 6px 14px !important; margin: 0;">
                                 Update Terakhir: Menunggu Data...
                             </div>
                         </div>
@@ -85,7 +85,7 @@
             </div>
             
             <div class="api-link-wrapper" style="background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); word-break: break-all;">
-                <p style="font-size: 0.85rem; margin: 0; color: #94a3b8;">🔗 API Utama (Vercel): <span style="color: #818cf8;" id="api-link">/api/Ranap</span></p>
+                <p style="font-size: 0.85rem; margin: 0; color: #94a3b8;">🔗 API Utama (Vercel): <span style="color: #818cf8;" id="api-link">https://ishiprsud.vercel.app/api/Ranap</span></p>
                 <p style="font-size: 0.85rem; margin: 6px 0 0 0; color: #94a3b8;">🔗 API Fallback (GAS): <span style="color: #10b981;" id="api-gas-link">https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=Ranap</span></p>
             </div>
 
@@ -116,73 +116,70 @@
             }, 1000);
 
             const layananSelector = document.getElementById('layanan-selector');
-            const webEl = document.getElementById('scrape-countdown');
-            const updateEl = document.getElementById('last-update');
+            const statusBadge = document.getElementById('status-badge');
+            const endpointUpdateBadge = document.getElementById('endpoint-update-badge');
 
             // Simpan teks original dropdown
             Array.from(layananSelector.options).forEach(opt => { opt.dataset.baseText = opt.text; });
 
-            // Map untuk menyesuaikan Selector dengan Object Key API
-            const apiMap = {
-                'Ranap': 'lastUpdateStrRanap',
-                'RajalBM_AntrianPx': 'lastUpdateStrRajalAntrianBM',
-                'RajalBM_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatBM',
-                'RajalEndo_AntrianPx': 'lastUpdateStrRajalAntrianEndo',
-                'RajalEndo_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatEndo',
-                'RajalPerio_AntrianPx': 'lastUpdateStrRajalAntrianPerio',
-                'RajalPerio_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatPerio',
-                'RajalUmum_AntrianPx': 'lastUpdateStrRajalAntrianUmum',
-                'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
-            };
-
-            // Sync Data Trigger & Countdown Vercel dari Struktur JSON Baru yg Flat
+            // Sync Data Trigger & Countdown Vercel dari Struktur JSON Objek endpointsData Independen
             setInterval(async () => {
                 try {
-                    const res = await fetch('/api/trigger');
+                    // BIG UPGRADE: Gunakan parameter penolak Cache ?_t= agar mendapat data 100% Realtime dari Vercel
+                    const res = await fetch('https://ishiprsud.vercel.app/api/trigger?_t=' + new Date().getTime());
                     const data = await res.json();
                     
+                    const eps = data.endpoints;
+                    if (!eps) return; // Mengamankan jika JSON tidak sesuai struktur
+                    
                     let ep = layananSelector.value;
-                    let epStatusStr = data[apiMap[ep]];
+                    let epData = eps[ep];
 
-                    // FIX LOGIC DISABLED/NONAKTIF UNTUK VERCEL DASHBOARD
-                    if (epStatusStr === "Mode Non-Aktif") {
-                        webEl.innerHTML = `🚫 Mode Non-Aktif`;
-                        webEl.style.color = "#ef4444";
-                        webEl.style.background = "rgba(239, 68, 68, 0.1)";
-                        webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
-                        updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
-                    } else {
-                        if (epStatusStr) updateEl.innerText = "Update Terakhir: " + epStatusStr;
-                        
-                        if (data.isScraping) {
-                            webEl.innerHTML = `🔄 Scraping Berjalan...`;
-                            webEl.style.color = "#fbbf24";
-                            webEl.style.background = "rgba(251, 191, 36, 0.2)";
-                            webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
-                        } else if (data.nextScrapeTime && data.nextScrapeTime > Date.now()) {
-                            let diff = data.nextScrapeTime - Date.now();
-                            let m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                            let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                            webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
-                            webEl.style.color = "#10b981"; 
-                            webEl.style.background = "rgba(16, 185, 129, 0.2)";
-                            webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                    if (epData) {
+                        // FIX LOGIC DISABLED/NONAKTIF
+                        if (epData.lastUpdateStr === "Mode Non-Aktif") {
+                            statusBadge.innerHTML = `🚫 Mode Non-Aktif`;
+                            statusBadge.style.color = "#ef4444";
+                            statusBadge.style.background = "rgba(239, 68, 68, 0.1)";
+                            statusBadge.style.borderColor = "rgba(239, 68, 68, 0.2)";
+                            endpointUpdateBadge.innerText = `Update Terakhir: Mode Non-Aktif`;
                         } else {
-                            webEl.innerHTML = `⏳ Menyiapkan...`;
-                            webEl.style.color = "#a78bfa";
-                            webEl.style.background = "rgba(167, 139, 250, 0.1)";
-                            webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
+                            // Render Tanggal Update
+                            if (epData.lastUpdateStr) endpointUpdateBadge.innerText = "Update Terakhir: " + epData.lastUpdateStr;
+                            else endpointUpdateBadge.innerText = "Update Terakhir: Menunggu Data...";
+                            
+                            // Render Status Countdown menggunakan objek independen (epData)
+                            if (epData.isScraping) {
+                                statusBadge.innerHTML = `🔄 Scraping Berjalan...`;
+                                statusBadge.style.color = "#fbbf24";
+                                statusBadge.style.background = "rgba(251, 191, 36, 0.2)";
+                                statusBadge.style.borderColor = "rgba(251, 191, 36, 0.3)";
+                            } else if (epData.nextScrapeTime && epData.nextScrapeTime > Date.now()) {
+                                let diff = epData.nextScrapeTime - Date.now();
+                                let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                                let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                                statusBadge.innerHTML = `⏳ Menunggu: ${m}:${s}`;
+                                statusBadge.style.color = "#10b981"; 
+                                statusBadge.style.background = "rgba(16, 185, 129, 0.2)";
+                                statusBadge.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                            } else {
+                                statusBadge.innerHTML = `⏳ Menyiapkan...`;
+                                statusBadge.style.color = "#a78bfa";
+                                statusBadge.style.background = "rgba(167, 139, 250, 0.1)";
+                                statusBadge.style.borderColor = "rgba(167, 139, 250, 0.2)";
+                            }
                         }
                     }
 
-                    // BUG FIX: Komparasi sebelum mengubah dropdown agar dropdown menu bisa diklik (tidak force close)
+                    // Sinkronisasi status Dropdown Text (Menambah label ❌ Nonaktif) - Fixed Logic kedipan
                     Array.from(layananSelector.options).forEach(opt => {
-                        let targetEp = data[apiMap[opt.value]];
+                        let targetEpData = eps[opt.value];
                         
-                        let targetText = (targetEp && targetEp === "Mode Non-Aktif") 
+                        let targetText = (targetEpData && targetEpData.lastUpdateStr === "Mode Non-Aktif") 
                             ? `${opt.dataset.baseText} (❌ Nonaktif)` 
                             : opt.dataset.baseText;
                             
+                        // Hanya timpa nilai jika berbeda untuk mencegah dropdown berkedip / force close
                         if (opt.text !== targetText) {
                             opt.text = targetText;
                         }
@@ -203,7 +200,7 @@
                 const cari = filterCari.value.toLowerCase();
                 const dokter = filterDokter.value.toLowerCase();
                 
-                document.getElementById('api-link').innerText = `/api/${endpoint}`;
+                document.getElementById('api-link').innerText = `https://ishiprsud.vercel.app/api/${endpoint}`;
                 document.getElementById('api-gas-link').innerText = `https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`;
                 
                 if (endpoint === 'Ranap') {
@@ -212,14 +209,21 @@
                     thead.innerHTML = `<tr><th>NO. RM</th><th>DATA PASIEN & KUNJUNGAN</th><th>PENJAMIN & DOKTER</th><th>STATUS</th></tr>`;
                 }
 
+                // BIG UPGRADE: Beri Loading State agar Dashboard tidak terasa beku/lag
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #a78bfa; font-weight: 500;">⏳ Sedang mengambil data realtime dari server...</td></tr>`;
+
                 try {
-                    let vercelUrl = `/api/${endpoint}?`;
+                    let vercelUrl = `https://ishiprsud.vercel.app/api/${endpoint}?`;
                     if(cari) vercelUrl += `cari=${encodeURIComponent(cari)}&`;
                     if(dokter) vercelUrl += `dokter=${encodeURIComponent(dokter)}&`;
+                    
+                    // Bypass Cache Vercel untuk Tabel Data Realtime
+                    vercelUrl += `_t=${new Date().getTime()}`; 
 
                     const response = await fetch(vercelUrl);
                     const result = await response.json();
 
+                    // Fallback to GAS if Vercel is empty or unavailable
                     let data = result.data || [];
                     if (!result.status || data.length === 0) {
                          const gasRes = await fetch(`https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`);
@@ -288,7 +292,7 @@
             filterCari.addEventListener('input', () => setTimeout(renderTable, 500));
 
             setInterval(renderTable, 20000);
-            renderTable();
+            renderTable(); // Jalankan render otomatis pada saat web pertama dimuat
         });
     </script>
 </body>
