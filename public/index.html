@@ -24,42 +24,44 @@
             </div>
         </header>
 
-        <!-- PANEL FILTER -->
+        <!-- PANEL FILTER (UI RESPONSIVE MOBILE FIXED) -->
         <div class="glass-panel">
-            <div class="filter-grid" style="grid-template-columns: 1fr 1fr 1fr;">
-                <div class="input-group">
-                    <label class="input-label" style="display: flex; justify-content: space-between;">
-                        Pilih Layanan Poliklinik
-                        <span id="auto-refresh-countdown" style="color: #6366f1; font-size: 0.75rem;">🔄 Tabel Auto Refresh: 20s</span>
-                    </label>
-                    
-                    <select id="layanan-selector" class="glass-input">
-                        <option value="Ranap" selected>Rawat Inap</option>
-                        <option value="RajalBM_AntrianPx">Rawat Jalan - Antrian Px Bedah Mulut</option>
-                        <option value="RajalBM_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
-                        <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
-                        <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
-                        <option value="RajalPerio_AntrianPx">Rawat Jalan - Antrian Px Periodonsia</option>
-                        <option value="RajalPerio_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Periodonsia</option>
-                        <!-- FITUR BARU UMUM / KLINIK GIGI -->
-                        <option value="RajalUmum_AntrianPx">Rawat Jalan - Antrian Px Klinik Gigi</option>
-                        <option value="RajalUmum_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Klinik Gigi</option>
-                    </select>
+            <!-- BARIS 1: LAYANAN & STATUS -->
+            <div class="input-group" style="margin-bottom: 1.5rem;">
+                <label class="input-label" style="display: flex; justify-content: space-between;">
+                    Pilih Layanan Poliklinik
+                    <span id="auto-refresh-countdown" style="color: #6366f1; font-size: 0.75rem;">🔄 Tabel Auto Refresh: 20s</span>
+                </label>
+                
+                <select id="layanan-selector" class="glass-input">
+                    <option value="Ranap" selected>Rawat Inap</option>
+                    <option value="RajalBM_AntrianPx">Rawat Jalan - Antrian Px Bedah Mulut</option>
+                    <option value="RajalBM_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Bedah Mulut</option>
+                    <option value="RajalEndo_AntrianPx">Rawat Jalan - Antrian Px Endodonsi</option>
+                    <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
+                    <option value="RajalPerio_AntrianPx">Rawat Jalan - Antrian Px Periodonsia</option>
+                    <option value="RajalPerio_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Periodonsia</option>
+                    <!-- FITUR BARU UMUM / KLINIK GIGI -->
+                    <option value="RajalUmum_AntrianPx">Rawat Jalan - Antrian Px Klinik Gigi</option>
+                    <option value="RajalUmum_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Klinik Gigi</option>
+                </select>
 
-                    <!-- KONTINER STATUS & LENCANA UPDATE TERAKHIR -->
-                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-size: 0.8rem; color: #94a3b8;">Status Auto-Scrape:</span>
-                            <span id="status-badge" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(167, 139, 250, 0.2); font-weight: bold;">⏳ Menyiapkan...</span>
-                        </div>
-                        <div style="display: flex; justify-content: flex-end;">
-                            <div class="badge-item badge-update" id="endpoint-update-badge" style="background: #463d6b; color: #bfa8ff; border: 1px solid #5d5386; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.8rem !important; padding: 6px 14px !important; margin: 0;">
-                                Update Terakhir: Menunggu Data...
-                            </div>
+                <!-- KONTINER STATUS & LENCANA UPDATE TERAKHIR -->
+                <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.8rem; color: #94a3b8;">Status Auto-Scrape:</span>
+                        <span id="scrape-countdown" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(167, 139, 250, 0.2); font-weight: bold;">⏳ Menyiapkan...</span>
+                    </div>
+                    <div style="display: flex; justify-content: flex-end;">
+                        <div class="badge-item badge-update" id="last-update" style="background: #463d6b; color: #bfa8ff; border: 1px solid #5d5386; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.8rem !important; padding: 6px 14px !important; margin: 0;">
+                            Update Terakhir: Menunggu Data...
                         </div>
                     </div>
                 </div>
-                
+            </div>
+            
+            <!-- BARIS 2: FILTER DOKTER & PENCARIAN (OTOMATIS TURUN DI MOBILE) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; align-items: end;">
                 <div class="input-group">
                     <label class="input-label">Filter Dokter DPJP</label>
                     <select id="filter-dokter" class="glass-input">
@@ -116,8 +118,8 @@
             }, 1000);
 
             const layananSelector = document.getElementById('layanan-selector');
-            const statusBadge = document.getElementById('status-badge');
-            const endpointUpdateBadge = document.getElementById('endpoint-update-badge');
+            const webEl = document.getElementById('scrape-countdown');
+            const updateEl = document.getElementById('last-update');
 
             // Simpan teks original dropdown
             Array.from(layananSelector.options).forEach(opt => { opt.dataset.baseText = opt.text; });
@@ -139,30 +141,30 @@
                     if (epData) {
                         // Render Tanggal Update Dari Objek Independen
                         if (epData.lastUpdateStr && epData.lastUpdateStr !== "Mode Non-Aktif") {
-                            endpointUpdateBadge.innerText = "Update Terakhir: " + epData.lastUpdateStr;
+                            updateEl.innerText = "Update Terakhir: " + epData.lastUpdateStr;
                         } else {
-                            endpointUpdateBadge.innerText = "Update Terakhir: Menunggu Data...";
+                            updateEl.innerText = "Update Terakhir: Menunggu Data...";
                         }
                         
                         // Render Status Countdown Menggunakan Objek Independen (epData)
                         if (epData.isScraping) {
-                            statusBadge.innerHTML = `🔄 Scraping Berjalan...`;
-                            statusBadge.style.color = "#fbbf24";
-                            statusBadge.style.background = "rgba(251, 191, 36, 0.2)";
-                            statusBadge.style.borderColor = "rgba(251, 191, 36, 0.3)";
+                            webEl.innerHTML = `🔄 Scraping Berjalan...`;
+                            webEl.style.color = "#fbbf24";
+                            webEl.style.background = "rgba(251, 191, 36, 0.2)";
+                            webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
                         } else if (epData.nextScrapeTime && epData.nextScrapeTime > Date.now()) {
                             let diff = epData.nextScrapeTime - Date.now();
                             let m = Math.floor(diff / 60000).toString().padStart(2, '0');
                             let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                            statusBadge.innerHTML = `⏳ Menunggu: ${m}:${s}`;
-                            statusBadge.style.color = "#10b981"; 
-                            statusBadge.style.background = "rgba(16, 185, 129, 0.2)";
-                            statusBadge.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                            webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
+                            webEl.style.color = "#10b981"; 
+                            webEl.style.background = "rgba(16, 185, 129, 0.2)";
+                            webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
                         } else {
-                            statusBadge.innerHTML = `⏳ Menyiapkan...`;
-                            statusBadge.style.color = "#a78bfa";
-                            statusBadge.style.background = "rgba(167, 139, 250, 0.1)";
-                            statusBadge.style.borderColor = "rgba(167, 139, 250, 0.2)";
+                            webEl.innerHTML = `⏳ Menyiapkan...`;
+                            webEl.style.color = "#a78bfa";
+                            webEl.style.background = "rgba(167, 139, 250, 0.1)";
+                            webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
                         }
                     }
 
