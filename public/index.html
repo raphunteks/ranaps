@@ -132,6 +132,7 @@
                     const eps = data.endpoints;
                     if (!eps) return; // Mengamankan jika JSON tidak sesuai struktur
                     
+                    // VALUE SELECTOR KINI LANGSUNG SAMA DENGAN KEY DI JSON ANDA ("Ranap", "RajalBM_AntrianPx", dst)
                     let ep = layananSelector.value;
                     let epData = eps[ep];
 
@@ -144,11 +145,11 @@
                             statusBadge.style.borderColor = "rgba(239, 68, 68, 0.2)";
                             endpointUpdateBadge.innerText = `Update Terakhir: Mode Non-Aktif`;
                         } else {
-                            // Render Tanggal Update
+                            // Render Tanggal Update Dari Objek Independen
                             if (epData.lastUpdateStr) endpointUpdateBadge.innerText = "Update Terakhir: " + epData.lastUpdateStr;
                             else endpointUpdateBadge.innerText = "Update Terakhir: Menunggu Data...";
                             
-                            // Render Status Countdown menggunakan objek independen (epData)
+                            // Render Status Countdown Menggunakan Objek Independen (epData)
                             if (epData.isScraping) {
                                 statusBadge.innerHTML = `🔄 Scraping Berjalan...`;
                                 statusBadge.style.color = "#fbbf24";
