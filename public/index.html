@@ -18,14 +18,9 @@
                     <p>High-Availability Data System (Vercel + Google Sheets Fallback)</p>
                 </div>
             </div>
+            <!-- LENCANA JAM DI HEADER -->
             <div class="badge-group">
                 <div class="badge-item badge-clock" id="live-clock" style="background: rgba(0,0,0,0.3); color: #fff; border-color: rgba(255,255,255,0.1); padding: 10px 20px; font-size: 1rem;">--:--:-- WITA</div>
-                <div class="badge-item" id="last-update" style="background: rgba(167, 139, 250, 0.2); color: #a78bfa; border: 1px solid rgba(167, 139, 250, 0.3); padding: 10px 20px; font-size: 0.9rem; border-radius: 30px;">
-                    Update Terakhir: --:--:--
-                </div>
-                <div class="badge-item badge-primary" style="padding: 10px 20px; font-size: 1rem; border-radius: 30px;">
-                    ⏳ Auto-Scrape: <span id="scrape-countdown" style="font-family: monospace; font-weight: bold; margin-left: 5px;">--:--</span>
-                </div>
             </div>
         </header>
 
@@ -35,8 +30,9 @@
                 <div class="input-group">
                     <label class="input-label" style="display: flex; justify-content: space-between;">
                         Pilih Layanan Poliklinik
-                        <span style="color: #6366f1; font-size: 0.75rem;">🔄 Auto Refresh: 20s</span>
+                        <span id="auto-refresh-countdown" style="color: #6366f1; font-size: 0.75rem;">🔄 Tabel Auto Refresh: 20s</span>
                     </label>
+                    
                     <select id="layanan-selector" class="glass-input">
                         <option value="Ranap" selected>Rawat Inap</option>
                         <option value="RajalBM_AntrianPx">Rawat Jalan - Antrian Px Bedah Mulut</option>
@@ -45,7 +41,23 @@
                         <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
                         <option value="RajalPerio_AntrianPx">Rawat Jalan - Antrian Px Periodonsia</option>
                         <option value="RajalPerio_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Periodonsia</option>
+                        <!-- FITUR BARU UMUM -->
+                        <option value="RajalUmum_AntrianPx">Rawat Jalan - Antrian Px Umum</option>
+                        <option value="RajalUmum_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Umum</option>
                     </select>
+
+                    <!-- KONTINER STATUS & LENCANA UPDATE TERAKHIR -->
+                    <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.8rem; color: #94a3b8;">Status Auto-Scrape:</span>
+                            <span id="scrape-countdown" style="background: rgba(167, 139, 250, 0.1); color: #a78bfa; padding: 4px 10px; border-radius: 4px; font-family: monospace; font-size: 0.85rem; border: 1px solid rgba(167, 139, 250, 0.2); font-weight: bold;">⏳ Menyiapkan...</span>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end;">
+                            <div class="badge-item badge-update" id="last-update" style="background: #463d6b; color: #bfa8ff; border: 1px solid #5d5386; box-shadow: 0 4px 10px rgba(0,0,0,0.1); font-size: 0.8rem !important; padding: 6px 14px !important; margin: 0;">
+                                Update Terakhir: Menunggu Data...
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="input-group">
@@ -86,7 +98,6 @@
         </div>
     </div>
 
-    <!-- LOGIKA EMBED LANGSUNG AGAR TIDAK HILANG -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Live Clock
@@ -95,40 +106,96 @@
                 document.getElementById('live-clock').innerText = timeString.replace(/\./g, ':') + ' WITA';
             }, 1000);
 
+            // Tabel Auto Refresh Countdown Fix (Jalan Mundur Realtime)
+            let refreshTimer = 20;
+            const refreshEl = document.getElementById('auto-refresh-countdown');
+            setInterval(() => {
+                refreshTimer--;
+                if (refreshTimer < 0) refreshTimer = 20;
+                if (refreshEl) refreshEl.innerText = `🔄 Tabel Auto Refresh: ${refreshTimer}s`;
+            }, 1000);
+
+            const layananSelector = document.getElementById('layanan-selector');
+            const webEl = document.getElementById('scrape-countdown');
+            const updateEl = document.getElementById('last-update');
+
+            // Map untuk menyesuaikan Selector dengan Object Key API
+            const apiMap = {
+                'Ranap': 'lastUpdateStrRanap',
+                'RajalBM_AntrianPx': 'lastUpdateStrRajalAntrianBM',
+                'RajalBM_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatBM',
+                'RajalEndo_AntrianPx': 'lastUpdateStrRajalAntrianEndo',
+                'RajalEndo_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatEndo',
+                'RajalPerio_AntrianPx': 'lastUpdateStrRajalAntrianPerio',
+                'RajalPerio_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatPerio',
+                'RajalUmum_AntrianPx': 'lastUpdateStrRajalAntrianUmum',
+                'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
+            };
+
             // Sync Data Trigger & Countdown Vercel
             setInterval(async () => {
                 try {
                     const res = await fetch('/api/trigger');
                     const data = await res.json();
                     
-                    const webEl = document.getElementById('scrape-countdown');
-                    const updateEl = document.getElementById('last-update');
-                    
-                    if (data.lastUpdateStr) updateEl.innerText = "Update Terakhir: " + data.lastUpdateStr;
+                    let ep = layananSelector.value;
+                    let epStatusStr = data.updates ? data.updates[apiMap[ep]] : null;
 
-                    if (data.isScraping) {
-                        webEl.innerText = "Scraping...";
-                        webEl.style.color = "#fbbf24";
-                    } else if (data.nextScrapeTime && data.nextScrapeTime > Date.now()) {
-                        let diff = data.nextScrapeTime - Date.now();
-                        let m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                        let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                        webEl.innerText = `${m}:${s}`;
-                        webEl.style.color = "#fff";
+                    // FIX LOGIC DISABLED/NONAKTIF UNTUK VERCEL DASHBOARD
+                    if (epStatusStr === "Mode Non-Aktif") {
+                        webEl.innerHTML = `🚫 Mode Non-Aktif`;
+                        webEl.style.color = "#ef4444";
+                        webEl.style.background = "rgba(239, 68, 68, 0.1)";
+                        webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
+                        updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
                     } else {
-                        webEl.innerText = "Menyiapkan...";
-                        webEl.style.color = "#94a3b8";
+                        // Render Tanggal Update
+                        if (epStatusStr) updateEl.innerText = "Update Terakhir: " + epStatusStr;
+                        
+                        // Render Status Countdown
+                        if (data.isScraping) {
+                            webEl.innerHTML = `🔄 Scraping Berjalan...`;
+                            webEl.style.color = "#fbbf24";
+                            webEl.style.background = "rgba(251, 191, 36, 0.2)";
+                            webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
+                        } else if (data.nextScrapeTime && data.nextScrapeTime > Date.now()) {
+                            let diff = data.nextScrapeTime - Date.now();
+                            let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                            let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                            webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
+                            webEl.style.color = "#10b981"; 
+                            webEl.style.background = "rgba(16, 185, 129, 0.2)";
+                            webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                        } else {
+                            webEl.innerHTML = `⏳ Menyiapkan...`;
+                            webEl.style.color = "#a78bfa";
+                            webEl.style.background = "rgba(167, 139, 250, 0.1)";
+                            webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
+                        }
                     }
+
+                    // Sinkronisasi status Dropdown Text (Menambah label ❌ Nonaktif)
+                    Array.from(layananSelector.options).forEach(opt => {
+                        if (!opt.dataset.baseText) opt.dataset.baseText = opt.text;
+                        let optStatus = data.updates ? data.updates[apiMap[opt.value]] : null;
+                        if (optStatus === "Mode Non-Aktif") {
+                            opt.text = `${opt.dataset.baseText} (❌ Nonaktif)`;
+                        } else {
+                            opt.text = opt.dataset.baseText;
+                        }
+                    });
+
                 } catch(e) {}
             }, 1000);
 
-            const layananSelector = document.getElementById('layanan-selector');
             const filterDokter = document.getElementById('filter-dokter');
             const filterCari = document.getElementById('filter-cari');
             const tbody = document.getElementById('table-body');
             const thead = document.getElementById('table-head');
             
             const renderTable = async () => {
+                refreshTimer = 20; // Reset Auto-Refresh Visual tiap data baru dimuat
+                
                 const endpoint = layananSelector.value;
                 const cari = filterCari.value.toLowerCase();
                 const dokter = filterDokter.value.toLowerCase();
@@ -203,8 +270,10 @@
                     filterDokter.value = "drg. Isnoe Suryandanu, Sp.BM";
                     filterDokter.disabled = true;
                 } else if(val.includes('Perio')) {
-                    // Update Dropdown Spesifik Periodonsia Sesuai Request
                     filterDokter.value = "drg. SULASTRIANAH., Sp.Perio (K)";
+                    filterDokter.disabled = true;
+                } else if(val.includes('Umum')) {
+                    filterDokter.value = "";
                     filterDokter.disabled = true;
                 } else {
                     filterDokter.value = "";
