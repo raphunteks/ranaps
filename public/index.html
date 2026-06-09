@@ -135,59 +135,56 @@
                 'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
             };
 
-            // Sync Data Trigger & Countdown Vercel
+            // Sync Data Trigger & Countdown Vercel dari Struktur JSON Baru yg Flat
             setInterval(async () => {
                 try {
                     const res = await fetch('/api/trigger');
                     const data = await res.json();
-                    if (!data.endpoints) return;
                     
                     let ep = layananSelector.value;
-                    let epData = data.endpoints[ep];
+                    let epStatusStr = data[apiMap[ep]];
 
-                    if (epData) {
-                        // FIX LOGIC DISABLED/NONAKTIF UNTUK VERCEL DASHBOARD
-                        if (epData.lastUpdateStr === "Mode Non-Aktif") {
-                            webEl.innerHTML = `🚫 Mode Non-Aktif`;
-                            webEl.style.color = "#ef4444";
-                            webEl.style.background = "rgba(239, 68, 68, 0.1)";
-                            webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
-                            updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
+                    // FIX LOGIC DISABLED/NONAKTIF UNTUK VERCEL DASHBOARD
+                    if (epStatusStr === "Mode Non-Aktif") {
+                        webEl.innerHTML = `🚫 Mode Non-Aktif`;
+                        webEl.style.color = "#ef4444";
+                        webEl.style.background = "rgba(239, 68, 68, 0.1)";
+                        webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
+                        updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
+                    } else {
+                        if (epStatusStr) updateEl.innerText = "Update Terakhir: " + epStatusStr;
+                        
+                        if (data.isScraping) {
+                            webEl.innerHTML = `🔄 Scraping Berjalan...`;
+                            webEl.style.color = "#fbbf24";
+                            webEl.style.background = "rgba(251, 191, 36, 0.2)";
+                            webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
+                        } else if (data.nextScrapeTime && data.nextScrapeTime > Date.now()) {
+                            let diff = data.nextScrapeTime - Date.now();
+                            let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                            let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                            webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
+                            webEl.style.color = "#10b981"; 
+                            webEl.style.background = "rgba(16, 185, 129, 0.2)";
+                            webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
                         } else {
-                            // Render Tanggal Update
-                            if (epData.lastUpdateStr) updateEl.innerText = "Update Terakhir: " + epData.lastUpdateStr;
-                            else updateEl.innerText = "Update Terakhir: Menunggu Data...";
-                            
-                            // Render Status Countdown
-                            if (epData.isScraping) {
-                                webEl.innerHTML = `🔄 Scraping Berjalan...`;
-                                webEl.style.color = "#fbbf24";
-                                webEl.style.background = "rgba(251, 191, 36, 0.2)";
-                                webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
-                            } else if (epData.nextScrapeTime && epData.nextScrapeTime > Date.now()) {
-                                let diff = epData.nextScrapeTime - Date.now();
-                                let m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                                let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                                webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
-                                webEl.style.color = "#10b981"; 
-                                webEl.style.background = "rgba(16, 185, 129, 0.2)";
-                                webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
-                            } else {
-                                webEl.innerHTML = `⏳ Menyiapkan...`;
-                                webEl.style.color = "#a78bfa";
-                                webEl.style.background = "rgba(167, 139, 250, 0.1)";
-                                webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
-                            }
+                            webEl.innerHTML = `⏳ Menyiapkan...`;
+                            webEl.style.color = "#a78bfa";
+                            webEl.style.background = "rgba(167, 139, 250, 0.1)";
+                            webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
                         }
                     }
 
-                    // Sinkronisasi status Dropdown Text (Menambah label ❌ Nonaktif)
+                    // BUG FIX: Komparasi sebelum mengubah dropdown agar dropdown menu bisa diklik (tidak force close)
                     Array.from(layananSelector.options).forEach(opt => {
-                        let targetEp = data.endpoints[opt.value];
-                        if (targetEp && targetEp.lastUpdateStr === "Mode Non-Aktif") {
-                            opt.text = `${opt.dataset.baseText} (❌ Nonaktif)`;
-                        } else {
-                            opt.text = opt.dataset.baseText;
+                        let targetEp = data[apiMap[opt.value]];
+                        
+                        let targetText = (targetEp && targetEp === "Mode Non-Aktif") 
+                            ? `${opt.dataset.baseText} (❌ Nonaktif)` 
+                            : opt.dataset.baseText;
+                            
+                        if (opt.text !== targetText) {
+                            opt.text = targetText;
                         }
                     });
 
@@ -223,7 +220,6 @@
                     const response = await fetch(vercelUrl);
                     const result = await response.json();
 
-                    // Fallback to GAS if Vercel is empty or unavailable
                     let data = result.data || [];
                     if (!result.status || data.length === 0) {
                          const gasRes = await fetch(`https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`);
