@@ -18,6 +18,7 @@
                     <p>High-Availability Data System (Vercel + Google Sheets Fallback)</p>
                 </div>
             </div>
+            <!-- LENCANA JAM DI HEADER -->
             <div class="badge-group">
                 <div class="badge-item badge-clock" id="live-clock" style="background: rgba(0,0,0,0.3); color: #fff; border-color: rgba(255,255,255,0.1); padding: 10px 20px; font-size: 1rem;">--:--:-- WITA</div>
             </div>
@@ -40,10 +41,12 @@
                         <option value="RajalEndo_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Endodonsi</option>
                         <option value="RajalPerio_AntrianPx">Rawat Jalan - Antrian Px Periodonsia</option>
                         <option value="RajalPerio_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Periodonsia</option>
-                        <option value="RajalUmum_AntrianPx">Rawat Jalan - Antrian Px Umum</option>
-                        <option value="RajalUmum_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Umum</option>
+                        <!-- FITUR BARU UMUM / KLINIK GIGI -->
+                        <option value="RajalUmum_AntrianPx">Rawat Jalan - Antrian Px Klinik Gigi</option>
+                        <option value="RajalUmum_RiwayatAntrianPx">Rawat Jalan - Riwayat Antrian Klinik Gigi</option>
                     </select>
 
+                    <!-- KONTINER STATUS & LENCANA UPDATE TERAKHIR -->
                     <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <span style="font-size: 0.8rem; color: #94a3b8;">Status Auto-Scrape:</span>
@@ -103,7 +106,7 @@
                 document.getElementById('live-clock').innerText = timeString.replace(/\./g, ':') + ' WITA';
             }, 1000);
 
-            // Tabel Auto Refresh Countdown
+            // Tabel Auto Refresh Countdown Fix (Jalan Mundur Realtime)
             let refreshTimer = 20;
             const refreshEl = document.getElementById('auto-refresh-countdown');
             setInterval(() => {
@@ -119,62 +122,69 @@
             // Simpan teks original dropdown
             Array.from(layananSelector.options).forEach(opt => { opt.dataset.baseText = opt.text; });
 
-            // Sync Data Trigger & Countdown Vercel dari Struktur JSON Baru yg Flat
+            // Map untuk menyesuaikan Selector dengan Object Key API
+            const apiMap = {
+                'Ranap': 'lastUpdateStrRanap',
+                'RajalBM_AntrianPx': 'lastUpdateStrRajalAntrianBM',
+                'RajalBM_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatBM',
+                'RajalEndo_AntrianPx': 'lastUpdateStrRajalAntrianEndo',
+                'RajalEndo_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatEndo',
+                'RajalPerio_AntrianPx': 'lastUpdateStrRajalAntrianPerio',
+                'RajalPerio_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatPerio',
+                'RajalUmum_AntrianPx': 'lastUpdateStrRajalAntrianUmum',
+                'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
+            };
+
+            // Sync Data Trigger & Countdown Vercel
             setInterval(async () => {
                 try {
                     const res = await fetch('/api/trigger');
                     const data = await res.json();
+                    if (!data.endpoints) return;
                     
-                    const apiMap = {
-                        'Ranap': 'lastUpdateStrRanap',
-                        'RajalBM_AntrianPx': 'lastUpdateStrRajalAntrianBM',
-                        'RajalBM_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatBM',
-                        'RajalEndo_AntrianPx': 'lastUpdateStrRajalAntrianEndo',
-                        'RajalEndo_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatEndo',
-                        'RajalPerio_AntrianPx': 'lastUpdateStrRajalAntrianPerio',
-                        'RajalPerio_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatPerio',
-                        'RajalUmum_AntrianPx': 'lastUpdateStrRajalAntrianUmum',
-                        'RajalUmum_RiwayatAntrianPx': 'lastUpdateStrRajalRiwayatUmum'
-                    };
-
                     let ep = layananSelector.value;
-                    let epStatusStr = data[apiMap[ep]];
+                    let epData = data.endpoints[ep];
 
-                    // FIX LOGIC NON-AKTIF
-                    if (epStatusStr === "Mode Non-Aktif") {
-                        webEl.innerHTML = `🚫 Mode Non-Aktif`;
-                        webEl.style.color = "#ef4444";
-                        webEl.style.background = "rgba(239, 68, 68, 0.1)";
-                        webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
-                        updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
-                    } else {
-                        if (epStatusStr) updateEl.innerText = "Update Terakhir: " + epStatusStr;
-                        
-                        if (data.isScraping) {
-                            webEl.innerHTML = `🔄 Scraping Berjalan...`;
-                            webEl.style.color = "#fbbf24";
-                            webEl.style.background = "rgba(251, 191, 36, 0.2)";
-                            webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
-                        } else if (data.nextScrapeTime && data.nextScrapeTime > Date.now()) {
-                            let diff = data.nextScrapeTime - Date.now();
-                            let m = Math.floor(diff / 60000).toString().padStart(2, '0');
-                            let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                            webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
-                            webEl.style.color = "#10b981"; 
-                            webEl.style.background = "rgba(16, 185, 129, 0.2)";
-                            webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                    if (epData) {
+                        // FIX LOGIC DISABLED/NONAKTIF UNTUK VERCEL DASHBOARD
+                        if (epData.lastUpdateStr === "Mode Non-Aktif") {
+                            webEl.innerHTML = `🚫 Mode Non-Aktif`;
+                            webEl.style.color = "#ef4444";
+                            webEl.style.background = "rgba(239, 68, 68, 0.1)";
+                            webEl.style.borderColor = "rgba(239, 68, 68, 0.2)";
+                            updateEl.innerText = `Update Terakhir: Mode Non-Aktif`;
                         } else {
-                            webEl.innerHTML = `⏳ Menyiapkan...`;
-                            webEl.style.color = "#a78bfa";
-                            webEl.style.background = "rgba(167, 139, 250, 0.1)";
-                            webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
+                            // Render Tanggal Update
+                            if (epData.lastUpdateStr) updateEl.innerText = "Update Terakhir: " + epData.lastUpdateStr;
+                            else updateEl.innerText = "Update Terakhir: Menunggu Data...";
+                            
+                            // Render Status Countdown
+                            if (epData.isScraping) {
+                                webEl.innerHTML = `🔄 Scraping Berjalan...`;
+                                webEl.style.color = "#fbbf24";
+                                webEl.style.background = "rgba(251, 191, 36, 0.2)";
+                                webEl.style.borderColor = "rgba(251, 191, 36, 0.3)";
+                            } else if (epData.nextScrapeTime && epData.nextScrapeTime > Date.now()) {
+                                let diff = epData.nextScrapeTime - Date.now();
+                                let m = Math.floor(diff / 60000).toString().padStart(2, '0');
+                                let s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                                webEl.innerHTML = `⏳ Menunggu: ${m}:${s}`;
+                                webEl.style.color = "#10b981"; 
+                                webEl.style.background = "rgba(16, 185, 129, 0.2)";
+                                webEl.style.borderColor = "rgba(16, 185, 129, 0.3)";
+                            } else {
+                                webEl.innerHTML = `⏳ Menyiapkan...`;
+                                webEl.style.color = "#a78bfa";
+                                webEl.style.background = "rgba(167, 139, 250, 0.1)";
+                                webEl.style.borderColor = "rgba(167, 139, 250, 0.2)";
+                            }
                         }
                     }
 
-                    // Sinkronisasi status Dropdown Text
+                    // Sinkronisasi status Dropdown Text (Menambah label ❌ Nonaktif)
                     Array.from(layananSelector.options).forEach(opt => {
-                        let targetEp = data[apiMap[opt.value]];
-                        if (targetEp && targetEp === "Mode Non-Aktif") {
+                        let targetEp = data.endpoints[opt.value];
+                        if (targetEp && targetEp.lastUpdateStr === "Mode Non-Aktif") {
                             opt.text = `${opt.dataset.baseText} (❌ Nonaktif)`;
                         } else {
                             opt.text = opt.dataset.baseText;
@@ -190,7 +200,7 @@
             const thead = document.getElementById('table-head');
             
             const renderTable = async () => {
-                refreshTimer = 20; // Reset Auto-Refresh Visual
+                refreshTimer = 20; // Reset Auto-Refresh Visual tiap data baru dimuat
                 
                 const endpoint = layananSelector.value;
                 const cari = filterCari.value.toLowerCase();
@@ -213,6 +223,7 @@
                     const response = await fetch(vercelUrl);
                     const result = await response.json();
 
+                    // Fallback to GAS if Vercel is empty or unavailable
                     let data = result.data || [];
                     if (!result.status || data.length === 0) {
                          const gasRes = await fetch(`https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`);
