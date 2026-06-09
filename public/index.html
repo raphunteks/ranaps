@@ -89,6 +89,11 @@
             <div class="api-link-wrapper" style="background: rgba(0,0,0,0.2); padding: 12px 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); word-break: break-all;">
                 <p style="font-size: 0.85rem; margin: 0; color: #94a3b8;">🔗 API Utama (Vercel): <span style="color: #818cf8;" id="api-link">https://ishiprsud.vercel.app/api/Ranap</span></p>
                 <p style="font-size: 0.85rem; margin: 6px 0 0 0; color: #94a3b8;">🔗 API Fallback (GAS): <span style="color: #10b981;" id="api-gas-link">https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=Ranap</span></p>
+                
+                <!-- FITUR BARU: STATUS API SERVER UTAMA/FALLBACK WEB VERCEL -->
+                <div id="server-status" style="margin-top: 12px; font-size: 0.85rem; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                    ⏳ <span style="color:#94a3b8;">Mengecek koneksi server...</span>
+                </div>
             </div>
 
             <div class="table-container">
@@ -139,7 +144,7 @@
                     let epData = eps[ep];
 
                     if (epData) {
-                        // Render Tanggal Update Dari Objek Independen
+                        // Render Tanggal Update Dari Objek Independen (Mengabaikan pesan Non-Aktif)
                         if (epData.lastUpdateStr && epData.lastUpdateStr !== "Mode Non-Aktif") {
                             updateEl.innerText = "Update Terakhir: " + epData.lastUpdateStr;
                         } else {
@@ -199,8 +204,15 @@
                     thead.innerHTML = `<tr><th>NO. RM</th><th>DATA PASIEN & KUNJUNGAN</th><th>PENJAMIN & DOKTER</th><th>STATUS</th></tr>`;
                 }
 
-                // BIG UPGRADE: Beri Loading State agar Dashboard tidak terasa beku/lag
+                // BIG UPGRADE: Beri Loading State & Reset Visual Status API
                 tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 40px; color: #a78bfa; font-weight: 500;">⏳ Sedang mengambil data realtime dari server...</td></tr>`;
+                
+                const serverStatusEl = document.getElementById('server-status');
+                if (serverStatusEl) {
+                    serverStatusEl.innerHTML = `⏳ <span style="color:#94a3b8;">Mengecek koneksi server...</span>`;
+                    serverStatusEl.style.background = "rgba(0,0,0,0.2)";
+                    serverStatusEl.style.border = "1px solid rgba(255,255,255,0.05)";
+                }
 
                 try {
                     let vercelUrl = `https://ishiprsud.vercel.app/api/${endpoint}?`;
@@ -213,12 +225,26 @@
                     const response = await fetch(vercelUrl);
                     const result = await response.json();
 
-                    // Fallback to GAS if Vercel is empty or unavailable
+                    // LOGIKA FALLBACK MODE AKTIF/TIDAK
                     let data = result.data || [];
                     if (!result.status || data.length === 0) {
+                         // JIKA KOSONG / GAGAL: Masuk Fallback Mode (Kuning)
+                         if (serverStatusEl) {
+                             serverStatusEl.innerHTML = `🟡 Fallback Mode: <span class="status-fallback" style="color: #fbbf24; font-weight: 600;">Google Sheets API Connected</span>`;
+                             serverStatusEl.style.background = "rgba(251, 191, 36, 0.1)";
+                             serverStatusEl.style.border = "1px solid rgba(251, 191, 36, 0.2)";
+                         }
+                         
                          const gasRes = await fetch(`https://script.google.com/macros/s/AKfycbzhDou1e-e4QXDILWfM_mkyagViYOvcpLLv7xL-kJ6cVhpR_R5_bVICdnUYxp0AA90/exec?type=${endpoint}`);
                          const gasData = await gasRes.json();
                          data = gasData.data || [];
+                    } else {
+                         // JIKA DATA AMAN: Mode Server Utama Vercel (Hijau)
+                         if (serverStatusEl) {
+                             serverStatusEl.innerHTML = `🟢 Server Utama: <span class="status-main" style="color: #10b981; font-weight: 600;">Vercel API Connected</span>`;
+                             serverStatusEl.style.background = "rgba(16, 185, 129, 0.1)";
+                             serverStatusEl.style.border = "1px solid rgba(16, 185, 129, 0.2)";
+                         }
                     }
 
                     document.getElementById('data-count').innerText = `${data.length} Pasien`;
